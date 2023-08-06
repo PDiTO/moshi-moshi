@@ -3,4 +3,46 @@ src = "src"
 out = "out"
 libs = ["lib"]
 
+[rpc_endpoints]
+mainnet = "${MAINNET}"
+goerli = "${GOERLI}"
+sepolia = "${SEPOLIA}"
+arbitrum-one = "${ARBITRUM}"
+arbitrum-one-goerli = "${ARBITRUMGOERLI}"
+arbitrum-nova = "${ARBITRUMNOVA}"
+avalanche = "${AVALANCHE}"
+avalanche-fuji = "${AVALANCHEFUJI}"
+base = "${BASE}"
+base-goerli = "${BASEGOERLI}"
+celo = "${celoAlfajores}"
+celo-alfajores = "${CELOALFAJORES}"
+mode = "${MODENETWORK}"
+optimism = "${OPTIMISM}"
+optimism-goerli = "${OPTIMISMGOERLI}"
+polygon = "${POLYGON}"
+polygon-mumbai = "${POLYGONMUMBAI}"
+zora = "${ZORA}"
+zora-goerli = "${ZORAGOERLI}"
+
+[etherscan]
+mainnet = { key = "${ETHERSCAN_API_KEY}" }
+goerli = { key = "${ETHERSCAN_API_KEY}" }
+sepolia = { key = "${ETHERSCAN_API_KEY}" }
+arbitrum-one = { key = "${ARBISCAN_API_KEY}", url = "https://api.arbiscan.io" }
+arbitrum-one-goerli = { key = "${ARBISCAN_API_KEY}", url = "https://api-goerli.arbiscan.io" }
+arbitrum-nova = { key = "${ARBISCANNOVA_API_KEY}" }
+avalanche = { key = "${SNOWTRACE_API_KEY}", url = "https://api.snowtrace.io" }
+avalanche-fuji = { key = "${SNOWTRACE_API_KEY}", url = "https://api-testnet.snowtrace.io" }
+base = { key = "${BASESCAN_API_KEY}", url = "https://api.basescan.org/" }
+base-goerli = { key = "${BASESCAN_API_KEY}", url = "https://api-goerli.basescan.org/" }
+celo = { key = ""}
+celo-alfajores = { key = ""}
+mode = { key = "${MODENETWORK_BLOCKSCOUT_API_KEY}", url = "https://sepolia.explorer.mode.network/api/v2" }
+optimism = { key = "${OPTIMISTIC_ETHERSCAN_API_KEY}", url = "https://api-optimistic.etherscan.io/api"}
+optimism-goerli = { key = "${OPTIMISTIC_ETHERSCAN_API_KEY}", url = "https://api-goerli-optimistic.etherscan.io/api"}
+polygon = { key = "${POLYGONSCAN_API_KEY}", url = "https://api.polygonscan.com/api" }
+polygon-mumbai = { key = "${POLYGONSCAN_API_KEY}", url = "https://api-testnet.polygonscan.com/api" }
+zora = { key = "${ZORA_BLOCKSCOUT_API_KEY}", url = "https://explorer.zora.energy/api" }
+zora-goerli = { key = "${ZORA_BLOCKSCOUT_API_KEY}", url = "https://testnet.explorer.zora.energy/api" }
+
 # See more config options https://github.com/foundry-rs/foundry/tree/master/config
