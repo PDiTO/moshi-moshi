@@ -10,7 +10,7 @@ export function Landing() {
         <span className="font-light">MOSHI</span>
       </h1>
       <h2 className="text-xl -mt-3 mb-6">
-        Chat with whomever, from whatever identity you want
+        Socialise in public. Boost your status.
       </h2>
       <div className="animate-pulse">
         <ConnectButton />
