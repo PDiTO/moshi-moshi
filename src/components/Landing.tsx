@@ -4,14 +4,17 @@ import { ConnectButton } from "@rainbow-me/rainbowkit";
 export function Landing() {
   return (
     <div className="flex min-h-screen flex-col items-center justify-center gap-2">
-      <Image src="/mmLogo.png" alt="me" width="128" height="128" />
+      <Image
+        src="/mmLogo.png"
+        alt="Moshi Moshi Logo"
+        width={128}
+        height={128}
+      />
       <h1 className="text-6xl font-medium">
         MOSHI
         <span className="font-light">MOSHI</span>
       </h1>
-      <h2 className="text-xl -mt-3 mb-6">
-        Socialise in public. Boost your status.
-      </h2>
+      <h2 className="text-xl -mt-3 mb-6">Join the conversation.</h2>
       <div className="animate-pulse">
         <ConnectButton />
       </div>

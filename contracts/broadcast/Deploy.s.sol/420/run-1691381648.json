@@ -1,0 +1,38 @@
+{
+  "transactions": [
+    {
+      "hash": "0x7f3166666f721d2101815aa616aa0b2d7fb412ab67c92dae35c67a406f9f5213",
+      "transactionType": "CALL",
+      "contractName": "Proxy",
+      "contractAddress": "0x4200000000000000000000000000000000000020",
+      "function": "register(string,address,bool):(bytes32)",
+      "arguments": [
+        "address aTestAddy, address anotherTestAddy",
+        "0x0000000000000000000000000000000000000000",
+        "true"
+      ],
+      "transaction": {
+        "type": "0x02",
+        "from": "0x3df822003c1b974fab42db7cb4da929afede4613",
+        "to": "0x4200000000000000000000000000000000000020",
+        "gas": "0x32901",
+        "value": "0x0",
+        "data": "0x60d7a278000000000000000000000000000000000000000000000000000000000000006000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001000000000000000000000000000000000000000000000000000000000000002a61646472657373206154657374416464792c206164647265737320616e6f74686572546573744164647900000000000000000000000000000000000000000000",
+        "nonce": "0x15",
+        "accessList": []
+      },
+      "additionalContracts": [],
+      "isFixedGasLimit": false
+    }
+  ],
+  "receipts": [],
+  "libraries": [],
+  "pending": [
+    "0x7f3166666f721d2101815aa616aa0b2d7fb412ab67c92dae35c67a406f9f5213"
+  ],
+  "returns": {},
+  "timestamp": 1691381648,
+  "chain": 420,
+  "multi": false,
+  "commit": "4bb75d9"
+}

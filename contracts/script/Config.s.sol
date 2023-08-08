@@ -3,11 +3,13 @@
 pragma solidity ^0.8.19;
 
 import {Script} from "forge-std/Script.sol";
-// Add mocks for EAS
+import "eas-contracts/EAS.sol";
+import "eas-contracts/SchemaRegistry.sol";
 
 struct ChainConfig {
     address easAddress;
     address schemaRegistryAddress;
+    bool live;
 }
 
 contract Config is Script {
@@ -16,60 +18,65 @@ contract Config is Script {
     constructor() {
         if (block.chainid == 1) {
             chainConfig = getMainnetConfig();
-        } else if (block.chainId == 84531) {
+        } else if (block.chainid == 84531) {
             chainConfig = getBaseGoerliConfig();
-        } else if (block.chainId == 10) {
+        } else if (block.chainid == 10) {
             chainConfig = getOptimismConfig();
-        } else if (block.chainId == 420) {
+        } else if (block.chainid == 420) {
             chainConfig = getOptimismGoerliConfig();
-        } else if (block.chainId == 11155111) {
+        } else if (block.chainid == 11155111) {
             chainConfig = getSepoliaConfig();
         } else {
             chainConfig = getLocalConfig();
         }
     }
 
-    function getMainnetConfig() public view returns (ChainConfig memory) {
+    function getMainnetConfig() public pure returns (ChainConfig memory) {
         return
             ChainConfig({
                 easAddress: 0xA1207F3BBa224E2c9c3c6D5aF63D0eb1582Ce587,
-                schemaRegistryAddress: 0xA7b39296258348C78294F95B872b282326A97BDF
+                schemaRegistryAddress: 0xA7b39296258348C78294F95B872b282326A97BDF,
+                live: true
             });
     }
 
-    function getBaseGoerliConfig() public view returns (ChainConfig memory) {
+    function getBaseGoerliConfig() public pure returns (ChainConfig memory) {
         return
             ChainConfig({
                 easAddress: 0xAcfE09Fd03f7812F022FBf636700AdEA18Fd2A7A,
-                schemaRegistryAddress: 0x720c2bA66D19A725143FBf5fDC5b4ADA2742682E
+                schemaRegistryAddress: 0x720c2bA66D19A725143FBf5fDC5b4ADA2742682E,
+                live: true
             });
     }
 
-    function getOptimismConfig() public view returns (ChainConfig memory) {
+    function getOptimismConfig() public pure returns (ChainConfig memory) {
         return
             ChainConfig({
                 easAddress: 0x4200000000000000000000000000000000000021,
-                schemaRegistryAddress: 0x4200000000000000000000000000000000000020
+                schemaRegistryAddress: 0x4200000000000000000000000000000000000020,
+                live: true
             });
     }
 
     function getOptimismGoerliConfig()
         public
-        view
+        pure
         returns (ChainConfig memory)
     {
         return
             ChainConfig({
                 easAddress: 0x4200000000000000000000000000000000000021,
-                schemaRegistryAddress: 0x4200000000000000000000000000000000000020
+                schemaRegistryAddress: 0x4200000000000000000000000000000000000020,
+                live: true
             });
     }
 
-    function getSepoliaConfig() public view returns (ChainConfig memory) {
+    function getSepoliaConfig() public pure returns (ChainConfig memory) {
         return
             ChainConfig({
                 easAddress: 0xC2679fBD37d54388Ce493F1DB75320D236e1815e,
-                schemaRegistryAddress: 0x0a7E2Ff54e76B8E6659aedc9103FB21c038050D0
+                schemaRegistryAddress: 0x0a7E2Ff54e76B8E6659aedc9103FB21c038050D0,
+                live: true
             });
     }
 
@@ -78,21 +85,15 @@ contract Config is Script {
             return chainConfig;
         }
 
-        vm.startBroadcast();
-        MockV3Aggregator wethPriceFeedMock = new MockV3Aggregator(8, 1900e8);
-        MockV3Aggregator wbtcPriceFeedMock = new MockV3Aggregator(8, 30000e8);
-        ERC20Mock wethMock = new ERC20Mock();
-        ERC20Mock wbtcMock = new ERC20Mock();
-        wethMock.mint(msg.sender, 100e18);
-        wbtcMock.mint(msg.sender, 100e8);
+        uint256 deployerPrivateKey = vm.envUint("PRIVATE_KEY");
+        vm.startBroadcast(deployerPrivateKey);
+        ISchemaRegistry schemaRegistry = new SchemaRegistry();
+        EAS eas = new EAS(schemaRegistry);
         vm.stopBroadcast();
 
         chainConfig = ChainConfig({
-            wethAddress: address(wethMock),
-            wbtcAddress: address(wbtcMock),
-            wethPriceFeed: address(wethPriceFeedMock),
-            wbtcPriceFeed: address(wbtcPriceFeedMock),
-            deployerPrivateKey: 0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80,
+            easAddress: address(eas),
+            schemaRegistryAddress: address(schemaRegistry),
             live: true
         });
 

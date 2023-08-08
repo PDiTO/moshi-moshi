@@ -1,12 +1,14 @@
+import { Chat } from "@/components/Chat";
+import { Chats } from "@/components/Chats";
 import { Landing } from "@/components/Landing";
 import { WrapperConnected } from "@/components/WrapperConnected";
 import { WrapperDisconnected } from "@/components/WrapperDisconnected";
 
 export default function Home() {
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center gap-2">
+    <main>
       <WrapperConnected>
-        <p>Connected</p>
+        <Chats />
       </WrapperConnected>
       <WrapperDisconnected>
         <Landing />
