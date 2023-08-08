@@ -1,9 +1,13 @@
+import { schemaConfig } from "@/config/schemaConfig";
 import { MyAttestationResult } from "@/types/easTypes";
 import axios from "axios";
 
-const baseURL = "https://sepolia.easscan.org";
+export async function getAttestationsForAddress(
+  address: string,
+  apiPrefix: string
+) {
+  const baseURL = `https://${apiPrefix}.easscan.org`;
 
-export async function getAttestationsForAddress(address: string) {
   const response = await axios.post<MyAttestationResult>(
     `${baseURL}/graphql`,
     {
@@ -13,8 +17,7 @@ export async function getAttestationsForAddress(address: string) {
       variables: {
         where: {
           schemaId: {
-            equals:
-              "0x334acfc3d5ad5e5a521f88ff3e6330ef462b473126d1dbfabcbc6f5bbb2cc38f",
+            equals: schemaConfig.publicMessage,
           },
           OR: [
             {

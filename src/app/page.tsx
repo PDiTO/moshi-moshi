@@ -1,4 +1,3 @@
-import { Chat } from "@/components/Chat";
 import { Chats } from "@/components/Chats";
 import { Landing } from "@/components/Landing";
 import { WrapperConnected } from "@/components/WrapperConnected";

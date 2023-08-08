@@ -10,6 +10,7 @@ import { Urbanist } from "next/font/google";
 // Components
 import { Providers } from "./providers";
 import Navbar from "@/components/Navbar";
+import { DataProvider } from "@/contexts/DataContext";
 
 const urbanist = Urbanist({ subsets: ["latin"] });
 
@@ -28,7 +29,7 @@ export default function RootLayout({
       <body className={urbanist.className}>
         <Providers>
           <Navbar />
-          {children}
+          <DataProvider>{children}</DataProvider>
         </Providers>
       </body>
     </html>

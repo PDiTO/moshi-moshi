@@ -16,7 +16,7 @@ export function publicClientToProvider(publicClient: PublicClient) {
       ({ value }) => new JsonRpcProvider(value?.url, network)
     );
     if (providers.length === 1) return providers[0];
-    console.log(providers);
+
     return new FallbackProvider(providers);
   }
   return new JsonRpcProvider(transport.url, network);

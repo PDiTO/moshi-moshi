@@ -1,69 +1,50 @@
 "use client";
 
-import { useEthersProvider } from "@/hooks/useEthersProvider";
-import { useEthersSigner } from "@/hooks/useEthersSinger";
-import { EAS, SchemaEncoder } from "@ethereum-attestation-service/eas-sdk";
+import { useData } from "@/contexts/DataContext";
+
 import { ArrowSmallUpIcon } from "@heroicons/react/20/solid";
 import { useState } from "react";
-import { useDebounce } from "use-debounce";
 
 type Props = {
-  onAttestation: (uid: string) => Promise<void>;
+  recipient: string;
 };
 
-export function MessageBox({ onAttestation }: Props) {
+export function MessageBox({ recipient }: Props) {
   const [message, setMessage] = useState("");
   const [sending, setSending] = useState(false);
 
-  const [debouncedMessage] = useDebounce(message, 500);
-  const signer = useEthersSigner();
+  const { handleSendMessage } = useData();
 
   const handleSend = async () => {
-    console.log(signer);
-
     setSending(true);
-
-    if (!signer) return;
-    const eas = new EAS("0xC2679fBD37d54388Ce493F1DB75320D236e1815e");
-    eas.connect(signer);
-
-    // Initialize SchemaEncoder with the schema string
-    const schemaEncoder = new SchemaEncoder("string publicMessage");
-    const encodedData = schemaEncoder.encodeData([
-      { name: "publicMessage", value: debouncedMessage, type: "string" },
-    ]);
-
-    const schemaUID =
-      "0x334acfc3d5ad5e5a521f88ff3e6330ef462b473126d1dbfabcbc6f5bbb2cc38f";
-
-    const tx = await eas.attest({
-      schema: schemaUID,
-      data: {
-        recipient: "0x3df822003C1B974fAB42dB7CB4Da929AFede4613",
-        expirationTime: BigInt(0),
-        revocable: true,
-        data: encodedData,
-      },
-    });
-
-    const newAttestationUID = await tx.wait();
-    await onAttestation(newAttestationUID);
-    setMessage("");
-    setSending(false);
+    try {
+      await handleSendMessage(message, recipient);
+      setMessage("");
+    } catch (error) {
+      console.log(error);
+    } finally {
+      setSending(false);
+    }
   };
 
   return (
-    <div className="w-full flex flex-row items-center justify-center gap-2">
+    <form
+      className="w-full flex flex-row items-center justify-center gap-2"
+      onSubmit={handleSend}
+    >
       <input
-        className="flex-grow bg-black text-white border border-gray-200 rounded-full py-2 px-3 leading-tight focus:outline-none focus:border-indigo-400"
+        className="flex-grow bg-black text-white border border-gray-200 rounded-full py-2 px-3 leading-tight focus:outline-none focus:border-indigo-400 disabled:opacity-50"
         id="message-text"
         type="text"
         placeholder="Message..."
         spellCheck={false}
         value={message}
         onChange={(e) => setMessage(e.target.value)}
+        onSubmit={handleSend}
+        disabled={sending}
       />
       <button
+        type="submit"
         disabled={sending || message.length === 0}
         onClick={handleSend}
         className={`flex justify-center items-center w-10 h-10 text-center rounded-full text-white bg-indigo-400 hover:opacity-80 disabled:opacity-50 disabled:cursor-not-allowed border-box`}
@@ -88,6 +69,6 @@ export function MessageBox({ onAttestation }: Props) {
           </svg>
         )}
       </button>
-    </div>
+    </form>
   );
 }
