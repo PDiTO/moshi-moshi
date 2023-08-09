@@ -8,6 +8,7 @@ import { useData } from "@/contexts/DataContext";
 import Link from "next/link";
 import { ChevronLeftIcon } from "@heroicons/react/20/solid";
 import Loading from "./Loading";
+import NavbarSpacer from "./NavbarSpacer";
 
 type Props = {
   recipient: string;
@@ -28,10 +29,11 @@ export function Chat({ recipient }: Props) {
   if (!recipient || !thisChat) return <Loading />;
 
   return (
-    <div className="w-full h-screen max-w-md mx-auto flex flex-col items-center py-20">
+    <div className="w-full h-screen max-w-md mx-auto flex flex-col items-center">
+      <NavbarSpacer />
       <div className="flex flex-row gap-2 items-center">
-        <Link href="/">
-          <ChevronLeftIcon className="w-10 h-10" />
+        <Link href="/chat">
+          <ChevronLeftIcon className="w-10 h-10 text-indigo-400 hover:opacity-80" />
         </Link>
         <h3 className="text-lg font-medium py-4">
           Chat with {thisChat?.address}
@@ -52,6 +54,7 @@ export function Chat({ recipient }: Props) {
       <div className="w-full max-w-md mt-8">
         <MessageBox recipient={recipient} />
       </div>
+      <NavbarSpacer />
     </div>
   );
 }

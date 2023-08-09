@@ -32,7 +32,21 @@ export interface Attestation {
   data: `0x${string}`;
 }
 
-export type ResolvedAttestation = Attestation & {
+export type ResolvedPublicMessageAttestation = Attestation & {
   publicMessage: string;
   isSender: boolean;
+};
+
+export type ResolvedThreadAttestation = Attestation & {
+  title: string;
+  thread: string;
+};
+
+export type ResolvedThreadCommentAttestation = Attestation & {
+  detailedRefUID: string;
+  threadComment: string;
+};
+
+export type ResolvedUpVoteAttestation = Attestation & {
+  upVote: boolean;
 };

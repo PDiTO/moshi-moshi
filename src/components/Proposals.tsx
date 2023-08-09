@@ -1,25 +1,25 @@
 "use client";
 
-import { ChatSummary } from "./ChatSummary";
 import { useData } from "@/contexts/DataContext";
 import Loading from "./Loading";
-import { PlusIcon, UserPlusIcon } from "@heroicons/react/20/solid";
+import { PlusIcon } from "@heroicons/react/20/solid";
 import { useState } from "react";
 import PrimeNewChat from "./PrimeNewChat";
 import NavbarSpacer from "./NavbarSpacer";
+import { ThreadSummary } from "./ThreadSummary";
 
-export function Chats() {
-  const { conversations, loadingConversations } = useData();
+export function Proposals() {
+  const { threads } = useData();
   const [showPrimeNewChat, setShowPrimeNewChat] = useState(false);
 
-  if (!conversations || loadingConversations) return <Loading />;
+  if (!threads) return <Loading />;
 
   return (
     <div className="flex flex-col h-screen items-center overflow-hidden">
       <NavbarSpacer />
       <div className="flex w-full max-w-sm justify-between items-start">
         <div className="w-20 display-hidden text-black">. </div>
-        <div className="text-center text-4xl font-medium">Chats</div>
+        <div className="text-center text-4xl font-medium">Open Props</div>
         <div className="text-right w-20">
           <button
             onClick={() => {
@@ -46,8 +46,8 @@ export function Chats() {
       </div>
 
       <div className="w-full max-w-sm mx-auto flex flex-col gap-4 overflow-y-auto mt-4">
-        {conversations.map((conversation, index) => (
-          <ChatSummary conversation={conversation} key={index} />
+        {threads.map((thread, index) => (
+          <ThreadSummary thread={thread} key={index} />
         ))}
       </div>
       <NavbarSpacer />

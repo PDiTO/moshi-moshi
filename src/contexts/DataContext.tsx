@@ -5,11 +5,22 @@ import { chainConfig } from "@/config/chainConfig";
 import { schemaConfig } from "@/config/schemaConfig";
 import { useEthersProvider } from "@/hooks/useEthersProvider";
 import { useEthersSigner } from "@/hooks/useEthersSinger";
-import { ResolvedPublicMessageAttestation } from "@/types/easTypes";
-import { Conversation } from "@/types/helperTypes";
+import {
+  ResolvedPublicMessageAttestation,
+  ResolvedThreadCommentAttestation,
+  ResolvedUpVoteAttestation,
+} from "@/types/easTypes";
+import { Conversation, Thread, ThreadComment } from "@/types/helperTypes";
 import { getNFTsForAddress } from "@/utils/covalentQueries";
-import { getAttestationsForAddress } from "@/utils/easQueries";
+import {
+  getPublicMessageAttestationsForAddress,
+  getThreadAttestationsForAddress,
+  getThreadCommentAttestationsForUids,
+  getUpVoteAttestationsForUids,
+} from "@/utils/easQueries";
 import { EAS, SchemaEncoder } from "@ethereum-attestation-service/eas-sdk";
+import { use } from "chai";
+import { useRouter } from "next/navigation";
 import {
   createContext,
   useContext,
@@ -22,8 +33,10 @@ import { useAccount, useContractEvent, useNetwork } from "wagmi";
 type DataContextType = {
   conversations: Conversation[];
   setConversations: React.Dispatch<React.SetStateAction<Conversation[]>>;
+  loadingConversations?: boolean;
   handleSendMessage: (message: string, recipient: string) => Promise<void>;
   primeEmptyConversation: (address: string) => void;
+  threads: Thread[];
 };
 
 const DataContext = createContext<DataContextType | undefined>(undefined);
@@ -41,25 +54,35 @@ interface DataProviderProps {
 }
 
 export function DataProvider({ children }: DataProviderProps) {
-  const [loading, setLoading] = useState(false);
-  const [covalentLoading, setCovalentLoading] = useState(false);
+  const [loadingConversations, setLoadingConversations] = useState(false);
   const [conversations, setConversations] = useState<Conversation[]>([]);
 
-  const { address } = useAccount();
+  const { address, isConnected } = useAccount();
   const { chain } = useNetwork();
+  const router = useRouter();
 
   const provider = useEthersProvider();
   const signer = useEthersSigner();
-  const schemaEncoder = new SchemaEncoder("string publicMessage");
 
-  //   Attestations //
+  // General
+
+  // Reset path when disconnecting
+  useEffect(() => {
+    if (!isConnected) {
+      router.push("/");
+    }
+  }, [isConnected]);
+
+  //   Public Message //
+
+  const publicMessageSchemaEncoder = new SchemaEncoder("string publicMessage");
 
   useEffect(() => {
     async function getAtts() {
-      if (!address || !chain || loading) return;
-      setLoading(true);
+      if (!address || !chain || loadingConversations) return;
+      setLoadingConversations(true);
       try {
-        const tmpAttestations = await getAttestationsForAddress(
+        const tmpAttestations = await getPublicMessageAttestationsForAddress(
           address,
           chainConfig[chain?.id].apiPrefix
         );
@@ -67,7 +90,7 @@ export function DataProvider({ children }: DataProviderProps) {
         const decodedAtts: ResolvedPublicMessageAttestation[] = [];
 
         tmpAttestations.forEach((att) => {
-          const decoded = schemaEncoder.decodeData(att.data);
+          const decoded = publicMessageSchemaEncoder.decodeData(att.data);
           decodedAtts.push({
             ...att,
             publicMessage: decoded[0].value.value.toString(),
@@ -83,7 +106,7 @@ export function DataProvider({ children }: DataProviderProps) {
       } catch (error) {
         console.log(error);
       } finally {
-        setLoading(false);
+        setLoadingConversations(false);
       }
     }
     getAtts();
@@ -138,7 +161,7 @@ export function DataProvider({ children }: DataProviderProps) {
     easProvider.connect(provider);
 
     const attestation = await easProvider.getAttestation(uid);
-    const decoded = schemaEncoder.decodeData(attestation.data);
+    const decoded = publicMessageSchemaEncoder.decodeData(attestation.data);
     const newAtt: ResolvedPublicMessageAttestation = {
       attester: attestation.attester,
       recipient: attestation.recipient,
@@ -221,17 +244,160 @@ export function DataProvider({ children }: DataProviderProps) {
     },
   });
 
+  // Threads
+  const [loadingThreads, setLoadingThreads] = useState(false);
+  const [threads, setThreads] = useState<Thread[]>([]);
+
+  const threadSchemaEncoder = new SchemaEncoder("string title, string thread");
+  const threadCommentSchemaEncoder = new SchemaEncoder(
+    "string detailedRefUID, string threadComment"
+  );
+  const upVoteSchemaEncoder = new SchemaEncoder("bool upVote");
+
+  function organizeByDetailedRefUID(
+    attestations: ResolvedThreadCommentAttestation[]
+  ): Record<string, ResolvedThreadCommentAttestation[]> {
+    const organized: Record<string, ResolvedThreadCommentAttestation[]> = {};
+
+    for (const attestation of attestations) {
+      if (!organized[attestation.detailedRefUID]) {
+        organized[attestation.detailedRefUID] = [];
+      }
+      organized[attestation.detailedRefUID].push(attestation);
+    }
+
+    return organized;
+  }
+
+  function getSubComments(
+    refUID: string,
+    organized: Record<string, ResolvedThreadCommentAttestation[]>,
+    votesArray: ResolvedUpVoteAttestation[]
+  ): ThreadComment[] {
+    const result = (organized[refUID] || [])
+      .filter((c) => c.detailedRefUID === refUID)
+      .map((c) => {
+        const subComments = getSubComments(c.id, organized, votesArray);
+        return {
+          attestation: c,
+          comments: subComments,
+          votes: votesArray.filter((vote) => vote.refUID === c.id).length,
+        };
+      });
+
+    return result;
+  }
+
+  useEffect(() => {
+    async function getThreads() {
+      if (!address || !chain || loadingThreads) return;
+      setLoadingThreads(true);
+      try {
+        const tmpAttestations = await getThreadAttestationsForAddress(
+          address,
+          chainConfig[chain?.id].apiPrefix
+        );
+        const uids = tmpAttestations.map((att) => att.id);
+
+        const tmpComments = await getThreadCommentAttestationsForUids(
+          uids,
+          chainConfig[chain?.id].apiPrefix
+        );
+
+        const commentUids = tmpComments.map((att) => att.id);
+        const tmpVotes = await getUpVoteAttestationsForUids(
+          [...uids, ...commentUids],
+          chainConfig[chain?.id].apiPrefix
+        );
+
+        const comments: ResolvedThreadCommentAttestation[] = tmpComments.map(
+          (att) => {
+            const decoded = threadCommentSchemaEncoder.decodeData(att.data);
+            return {
+              ...att,
+              detailedRefUID: decoded[0].value.value.toString(),
+              threadComment: decoded[1].value.value.toString(),
+            };
+          }
+        );
+
+        const organizedComments = organizeByDetailedRefUID(comments);
+
+        const votes: ResolvedUpVoteAttestation[] = tmpVotes
+          .map((att) => {
+            const decoded = upVoteSchemaEncoder.decodeData(att.data);
+            return {
+              ...att,
+              upVote: decoded[0].value.value as boolean,
+            };
+          })
+          .filter(
+            (vote, index, self) =>
+              vote.upVote !== false &&
+              !self.some(
+                (v, idx) =>
+                  v.attester === vote.attester &&
+                  v.refUID === vote.refUID &&
+                  idx < index
+              )
+          );
+
+        const tempThreads: Thread[] = [];
+
+        tmpAttestations.forEach((att) => {
+          const decoded = threadSchemaEncoder.decodeData(att.data);
+          const convertedThread = {
+            ...att,
+            title: decoded[0].value.value.toString(),
+            thread: decoded[1].value.value.toString(),
+          };
+
+          const threadComments: ThreadComment[] = (
+            organizedComments[att.id] || []
+          )
+            .filter((c) => c.refUID === att.id)
+            .map((c) => ({
+              attestation: c,
+              comments: getSubComments(c.id, organizedComments, votes),
+              votes: votes.filter((vote) => vote.refUID === c.id).length,
+            }));
+
+          tempThreads.push({
+            attestation: convertedThread,
+            comments: threadComments,
+            votes: votes.filter((vote) => vote.refUID === convertedThread.id)
+              .length,
+          });
+        });
+
+        setThreads(tempThreads);
+
+        console.log("DATA", tempThreads);
+
+        console.log(tempThreads);
+      } catch (error) {
+        console.log(error);
+      } finally {
+        setLoadingThreads(false);
+      }
+    }
+    getThreads();
+  }, [address, chain]);
+
   // NFTs
+  const [covalentLoading, setCovalentLoading] = useState(false);
+
   useEffect(() => {
     async function getNFTs() {
       if (!address || !chain || covalentLoading) return;
       setCovalentLoading(true);
       try {
-        getNFTsForAddress(address);
+        const NFTs = await getNFTsForAddress(address);
+        console.log("Grabbed NFTs", NFTs);
       } catch (error) {
         console.log(error);
       } finally {
-        setLoading(false);
+        setCovalentLoading(false);
       }
     }
     getNFTs();
@@ -242,8 +408,10 @@ export function DataProvider({ children }: DataProviderProps) {
       value={{
         conversations,
         setConversations,
+        loadingConversations,
         handleSendMessage,
         primeEmptyConversation,
+        threads,
       }}
     >
       {children}

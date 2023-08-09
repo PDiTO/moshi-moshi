@@ -11,6 +11,7 @@ import { Urbanist } from "next/font/google";
 import { Providers } from "./providers";
 import Navbar from "@/components/Navbar";
 import { DataProvider } from "@/contexts/DataContext";
+import ModeToggle from "@/components/ModeToggle";
 
 const urbanist = Urbanist({ subsets: ["latin"] });
 
@@ -29,6 +30,7 @@ export default function RootLayout({
       <body className={urbanist.className}>
         <Providers>
           <Navbar />
+          <ModeToggle />
           <DataProvider>{children}</DataProvider>
         </Providers>
       </body>
