@@ -6,19 +6,33 @@ import { schemaConfig } from "@/config/schemaConfig";
 import { useEthersProvider } from "@/hooks/useEthersProvider";
 import { useEthersSigner } from "@/hooks/useEthersSinger";
 import {
+  ResolvedProfileAttestation,
   ResolvedPublicMessageAttestation,
+  ResolvedThreadAttestation,
   ResolvedThreadCommentAttestation,
   ResolvedUpVoteAttestation,
 } from "@/types/easTypes";
-import { Conversation, Thread, ThreadComment } from "@/types/helperTypes";
+import {
+  Conversation,
+  Thread,
+  ThreadComment,
+  ThreadsToLoad,
+} from "@/types/helperTypes";
 import { getNFTsForAddress } from "@/utils/covalentQueries";
 import {
+  getENSNames,
+  getProfilesForAddresses,
   getPublicMessageAttestationsForAddress,
+  getRecentThreads,
   getThreadAttestationsForAddress,
   getThreadCommentAttestationsForUids,
   getUpVoteAttestationsForUids,
 } from "@/utils/easQueries";
-import { EAS, SchemaEncoder } from "@ethereum-attestation-service/eas-sdk";
+import {
+  EAS,
+  SchemaEncoder,
+  SchemaRegistry,
+} from "@ethereum-attestation-service/eas-sdk";
 import { use } from "chai";
 import { useRouter } from "next/navigation";
 import {
@@ -28,7 +42,13 @@ import {
   ReactNode,
   useEffect,
 } from "react";
-import { useAccount, useContractEvent, useNetwork } from "wagmi";
+import { normalize } from "viem/ens";
+import {
+  useAccount,
+  useContractEvent,
+  useNetwork,
+  usePublicClient,
+} from "wagmi";
 
 type DataContextType = {
   conversations: Conversation[];
@@ -37,6 +57,23 @@ type DataContextType = {
   handleSendMessage: (message: string, recipient: string) => Promise<void>;
   primeEmptyConversation: (address: string) => void;
   threads: Thread[];
+  loadingThreads?: boolean;
+  threadsToLoad: ThreadsToLoad;
+  setThreadsToLoad: React.Dispatch<React.SetStateAction<ThreadsToLoad>>;
+  handleCreateThread: (title: string, thread: string) => Promise<void>;
+  handleCreateComment: (
+    opRefUID: string,
+    refUID: string,
+    attester: string,
+    comment: string
+  ) => Promise<void>;
+  upVoteAttestation: (refUID: string) => Promise<void>;
+  createProfile: (displayName: string, avatarUrl: string) => Promise<void>;
+  createSchema: (
+    schemaName: string,
+    schema: string,
+    revocable?: boolean
+  ) => Promise<void>;
 };
 
 const DataContext = createContext<DataContextType | undefined>(undefined);
@@ -247,6 +284,9 @@ export function DataProvider({ children }: DataProviderProps) {
   // Threads
   const [loadingThreads, setLoadingThreads] = useState(false);
   const [threads, setThreads] = useState<Thread[]>([]);
+  const [threadsToLoad, setThreadsToLoad] = useState<ThreadsToLoad>(
+    ThreadsToLoad.RECENT
+  );
 
   const threadSchemaEncoder = new SchemaEncoder("string title, string thread");
   const threadCommentSchemaEncoder = new SchemaEncoder(
@@ -282,21 +322,53 @@ export function DataProvider({ children }: DataProviderProps) {
           attestation: c,
           comments: subComments,
           votes: votesArray.filter((vote) => vote.refUID === c.id).length,
+          liked:
+            votesArray.filter(
+              (vote) => vote.refUID === c.id && vote.attester === address
+            ).length > 0,
         };
       });
 
     return result;
   }
 
+  const getDesiredThreads = async () => {
+    if (!address || !chain || loadingThreads) return;
+
+    try {
+      if (threadsToLoad === ThreadsToLoad.RECENT) {
+        const tmpAttestations = await getRecentThreads(
+          chainConfig[chain?.id].apiPrefix
+        );
+
+        return tmpAttestations;
+      } else if (threadsToLoad === ThreadsToLoad.MINE) {
+        const tmpAttestations = await getThreadAttestationsForAddress(
+          address,
+          chainConfig[chain?.id].apiPrefix
+        );
+        return tmpAttestations;
+      } else {
+        return [];
+      }
+    } catch (error) {
+      console.log(error);
+      throw error;
+    }
+  };
+
   useEffect(() => {
     async function getThreads() {
       if (!address || !chain || loadingThreads) return;
       setLoadingThreads(true);
       try {
-        const tmpAttestations = await getThreadAttestationsForAddress(
-          address,
-          chainConfig[chain?.id].apiPrefix
-        );
+        // const tmpAttestations = await getThreadAttestationsForAddress(
+        //   address,
+        //   chainConfig[chain?.id].apiPrefix
+        // );
+
+        const tmpAttestations = (await getDesiredThreads()) ?? [];
+
         const uids = tmpAttestations.map((att) => att.id);
 
         const tmpComments = await getThreadCommentAttestationsForUids(
@@ -320,6 +392,12 @@ export function DataProvider({ children }: DataProviderProps) {
             };
           }
         );
+
+        const threadAddresses = tmpAttestations.map((att) => att.attester);
+        const commentAddresses = comments.map((att) => att.attester);
+        const allAddresses = [...threadAddresses, ...commentAddresses];
+
+        const profiles = await getProfiles(allAddresses);
 
         const organizedComments = organizeByDetailedRefUID(comments);
 
@@ -360,6 +438,10 @@ export function DataProvider({ children }: DataProviderProps) {
               attestation: c,
               comments: getSubComments(c.id, organizedComments, votes),
               votes: votes.filter((vote) => vote.refUID === c.id).length,
+              liked:
+                votes.filter(
+                  (vote) => vote.refUID === c.id && vote.attester === address
+                ).length > 0,
             }));
 
           tempThreads.push({
@@ -367,14 +449,17 @@ export function DataProvider({ children }: DataProviderProps) {
             comments: threadComments,
             votes: votes.filter((vote) => vote.refUID === convertedThread.id)
               .length,
+            liked:
+              votes.filter(
+                (vote) =>
+                  vote.refUID === convertedThread.id &&
+                  vote.attester === address
+              ).length > 0,
           });
         });
 
-        setThreads(tempThreads);
-
-        console.log("DATA", tempThreads);
-
-        console.log(tempThreads);
+        const sortedThreads = sortThreads(tempThreads);
+        setThreads(sortedThreads);
       } catch (error) {
         console.log(error);
       } finally {
@@ -382,7 +467,265 @@ export function DataProvider({ children }: DataProviderProps) {
       }
     }
     getThreads();
-  }, [address, chain]);
+  }, [address, chain, threadsToLoad]);
+
+  const handleCreateThread = async (title: string, thread: string) => {
+    try {
+      if (!signer) return;
+      const eas = new EAS(chainConfig[chain?.id ?? 10].eas);
+      eas.connect(signer);
+
+      // Initialize SchemaEncoder with the schema string
+      const encodedData = threadSchemaEncoder.encodeData([
+        { name: "title", value: title, type: "string" },
+        { name: "thread", value: thread, type: "string" },
+      ]);
+
+      const schemaUID = schemaConfig.thread;
+
+      const tx = await eas.attest({
+        schema: schemaUID,
+        data: {
+          recipient: "0x0000000000000000000000000000000000000000",
+          expirationTime: BigInt(0),
+          revocable: true,
+          data: encodedData,
+        },
+      });
+
+      const newAttestationUID = await tx.wait();
+
+      const easProvider = new EAS(chainConfig[chain?.id ?? 10].eas);
+      easProvider.connect(provider);
+
+      const attestation = await easProvider.getAttestation(newAttestationUID);
+      const decoded = threadSchemaEncoder.decodeData(attestation.data);
+      const newAtt: ResolvedThreadAttestation = {
+        attester: attestation.attester,
+        recipient: attestation.recipient,
+        refUID: attestation.refUID,
+        revocationTime: parseInt(attestation.revocationTime.toString()),
+        expirationTime: parseInt(attestation.expirationTime.toString()),
+        time: parseInt(attestation.time.toString()),
+        id: attestation.uid,
+        txid: "unknown",
+        data: "0x",
+        title: decoded[0].value.value.toString(),
+        thread: decoded[1].value.value.toString(),
+      };
+      const newThread: Thread = {
+        attestation: newAtt,
+        comments: [],
+        votes: 0,
+      };
+
+      setThreads((prevThreads) => {
+        return [newThread, ...prevThreads];
+      });
+    } catch (error) {
+      console.log(error);
+      throw error;
+    }
+  };
+
+  // Utility function to recursively find the correct spot and add the comment
+  function addNewComment(
+    comments: ThreadComment[],
+    refUID: string,
+    newComment: ThreadComment
+  ): ThreadComment[] {
+    return comments.map((comment) => {
+      if (comment.attestation.id === refUID) {
+        // Found the matching comment, append the new comment
+        return { ...comment, comments: [...comment.comments, newComment] };
+      } else if (comment.comments.length) {
+        // Didn't find the comment, but it has sub-comments. Recurse.
+        return {
+          ...comment,
+          comments: addNewComment(comment.comments, refUID, newComment),
+        };
+      }
+      return comment; // Comment doesn't match and doesn't have sub-comments, return unchanged
+    });
+  }
+
+  function insertCommentToThread(
+    threads: Thread[],
+    threadRefUID: string,
+    refUID: string,
+    newComment: ThreadComment
+  ): Thread[] {
+    return threads.map((thread) => {
+      if (thread.attestation.id === threadRefUID) {
+        if (thread.attestation.id === refUID) {
+          // The new comment directly relates to this thread
+          return { ...thread, comments: [...thread.comments, newComment] };
+        } else {
+          // The new comment relates to an existing comment or sub-comment in this thread
+          return {
+            ...thread,
+            comments: addNewComment(thread.comments, refUID, newComment),
+          };
+        }
+      }
+      return thread; // This isn't the matching thread, return unchanged
+    });
+  }
+
+  const handleCreateComment = async (
+    opRefUID: string,
+    refUID: string,
+    attester: string,
+    comment: string
+  ) => {
+    try {
+      if (!signer) return;
+      const eas = new EAS(chainConfig[chain?.id ?? 10].eas);
+      eas.connect(signer);
+
+      // Initialize SchemaEncoder with the schema string
+      const encodedData = threadCommentSchemaEncoder.encodeData([
+        { name: "detailedRefUID", value: refUID, type: "string" },
+        { name: "threadComment", value: comment, type: "string" },
+      ]);
+
+      const schemaUID = schemaConfig.threadComment;
+
+      const tx = await eas.attest({
+        schema: schemaUID,
+        data: {
+          recipient: attester,
+          expirationTime: BigInt(0),
+          revocable: true,
+          refUID: opRefUID,
+          data: encodedData,
+        },
+      });
+
+      const newAttestationUID = await tx.wait();
+
+      const easProvider = new EAS(chainConfig[chain?.id ?? 10].eas);
+      easProvider.connect(provider);
+
+      const attestation = await easProvider.getAttestation(newAttestationUID);
+      const decoded = threadSchemaEncoder.decodeData(attestation.data);
+      const newAtt: ResolvedThreadCommentAttestation = {
+        attester: attestation.attester,
+        recipient: attestation.recipient,
+        refUID: attestation.refUID,
+        revocationTime: parseInt(attestation.revocationTime.toString()),
+        expirationTime: parseInt(attestation.expirationTime.toString()),
+        time: parseInt(attestation.time.toString()),
+        id: attestation.uid,
+        txid: "unknown",
+        data: "0x",
+        detailedRefUID: decoded[0].value.value.toString(),
+        threadComment: decoded[1].value.value.toString(),
+      };
+      const newComment: ThreadComment = {
+        attestation: newAtt,
+        comments: [],
+        votes: 0,
+      };
+
+      const updatedThreads = insertCommentToThread(
+        threads,
+        opRefUID,
+        refUID,
+        newComment
+      );
+      const sortedThreads = sortThreads(updatedThreads);
+      setThreads(sortedThreads);
+    } catch (error) {
+      console.log(error);
+      throw error;
+    }
+  };
+
+  // Utility function to recursively find and update the correct comment
+  function updateVoteCount(
+    comments: ThreadComment[],
+    uid: string
+  ): ThreadComment[] {
+    return comments.map((comment) => {
+      if (comment.attestation.id === uid) {
+        // Found the comment, update its votes
+        return { ...comment, votes: comment.votes + 1, liked: true };
+      } else if (comment.comments.length) {
+        // Didn't find the comment, but it has sub-comments. Recurse.
+        return { ...comment, comments: updateVoteCount(comment.comments, uid) };
+      }
+      return comment; // Comment doesn't match and doesn't have sub-comments, return unchanged
+    });
+  }
+
+  function incrementVoteByUID(threads: Thread[], uid: string): Thread[] {
+    return threads.map((thread) => {
+      if (thread.attestation.id === uid) {
+        // Found the thread, update its votes
+        return { ...thread, votes: thread.votes + 1, liked: true };
+      } else if (thread.comments.length) {
+        // Didn't find the thread, but there might be a matching comment or sub-comment. Recurse.
+        return { ...thread, comments: updateVoteCount(thread.comments, uid) };
+      }
+      return thread; // Thread doesn't match and doesn't have matching comments, return unchanged
+    });
+  }
+
+  const upVoteAttestation = async (refUID: string) => {
+    try {
+      if (!signer) return;
+      const eas = new EAS(chainConfig[chain?.id ?? 10].eas);
+      eas.connect(signer);
+
+      // Initialize SchemaEncoder with the schema string
+      const encodedData = upVoteSchemaEncoder.encodeData([
+        { name: "upVote", value: true, type: "bool" },
+      ]);
+
+      const schemaUID = schemaConfig.upVote;
+
+      const tx = await eas.attest({
+        schema: schemaUID,
+        data: {
+          recipient: "0x0000000000000000000000000000000000000000",
+          expirationTime: BigInt(0),
+          revocable: true,
+          refUID: refUID,
+          data: encodedData,
+        },
+      });
+
+      await tx.wait();
+      const updatedThreads = incrementVoteByUID(threads, refUID);
+      const sortedThreads = sortThreads(updatedThreads);
+      setThreads(sortedThreads);
+    } catch (error) {
+    } finally {
+    }
+  };
+
+  function sortCommentsByVotes(comments: ThreadComment[]): ThreadComment[] {
+    return comments
+      .map((comment) => ({
+        ...comment,
+        comments: sortCommentsByVotes(comment.comments),
+      }))
+      .sort((a, b) => b.votes - a.votes);
+  }
+
+  function sortThreadsByVotes(threads: Thread[]): Thread[] {
+    return threads
+      .map((thread) => ({
+        ...thread,
+        comments: sortCommentsByVotes(thread.comments),
+      }))
+      .sort((a, b) => b.votes - a.votes);
+  }
+
+  const sortThreads = (threads: Thread[]): Thread[] => {
+    return sortThreadsByVotes(threads);
+  };
 
   // NFTs
   const [covalentLoading, setCovalentLoading] = useState(false);
@@ -403,6 +746,107 @@ export function DataProvider({ children }: DataProviderProps) {
     getNFTs();
   }, [address, chain]);
 
+  // PROFILE
+  const [loadingProfiles, setLoadingProfiles] = useState(false);
+  const [profiles, setProfiles] = useState<{
+    [address: string]: ResolvedProfileAttestation;
+  }>({});
+
+  const profileSchemaEncoder = new SchemaEncoder(
+    "string displayName, string avatarUrl"
+  );
+
+  const getProfiles = async (addresses: string[]) => {
+    if (!chain || !address) return;
+    setLoadingProfiles(true);
+
+    try {
+      const newProfiles = await getProfilesForAddresses(
+        [...addresses, address],
+        chainConfig[chain?.id].apiPrefix
+      );
+
+      const decodedAtts: ResolvedProfileAttestation[] = [];
+
+      newProfiles.forEach((att) => {
+        const decoded = profileSchemaEncoder.decodeData(att.data);
+        decodedAtts.push({
+          ...att,
+          displayName: decoded[0].value.value.toString(),
+          avatarUrl: decoded[1].value.value.toString(),
+        });
+      });
+
+      const updatedProfiles = { ...profiles };
+      decodedAtts.forEach((profile) => {
+        updatedProfiles[profile.attester] = profile;
+      });
+      setProfiles(updatedProfiles);
+      console.log("ABC", updatedProfiles);
+    } catch (error) {
+      console.log(error);
+    } finally {
+      setLoadingProfiles(false);
+    }
+  };
+
+  const createProfile = async (displayName: string, avatarUrl: string) => {
+    try {
+      if (!signer) return;
+      const eas = new EAS(chainConfig[chain?.id ?? 10].eas);
+      eas.connect(signer);
+
+      // Initialize SchemaEncoder with the schema string
+      const encodedData = profileSchemaEncoder.encodeData([
+        { name: "displayName", value: displayName, type: "string" },
+        { name: "avatarUrl", value: avatarUrl, type: "string" },
+      ]);
+
+      const schemaUID = schemaConfig.profile;
+
+      const tx = await eas.attest({
+        schema: schemaUID,
+        data: {
+          recipient: "0x0000000000000000000000000000000000000000",
+          expirationTime: BigInt(0),
+          revocable: true,
+          data: encodedData,
+        },
+      });
+
+      await tx.wait();
+
+      // Update local profile
+      // TODO
+    } catch (error) {
+      console.log(error);
+      throw error;
+    }
+  };
+
+  // SCHEMAS
+  const createSchema = async (
+    schema: string,
+    resolverAddress: string,
+    revocable: boolean = true
+  ) => {
+    if (!signer) return;
+    const schemaRegistryContractAddress =
+      chainConfig[chain?.id ?? 10].schemaRegistry;
+    const schemaRegistry = new SchemaRegistry(schemaRegistryContractAddress);
+
+    schemaRegistry.connect(signer);
+
+    const transaction = await schemaRegistry.register({
+      schema,
+      resolverAddress,
+      revocable,
+    });
+
+    // Optional: Wait for transaction to be validated
+    await transaction.wait();
+  };
+
   return (
     <DataContext.Provider
       value={{
@@ -412,6 +856,14 @@ export function DataProvider({ children }: DataProviderProps) {
         handleSendMessage,
         primeEmptyConversation,
         threads,
+        loadingThreads,
+        threadsToLoad,
+        setThreadsToLoad,
+        handleCreateThread,
+        handleCreateComment,
+        upVoteAttestation,
+        createProfile,
+        createSchema,
       }}
     >
       {children}

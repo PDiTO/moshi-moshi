@@ -50,3 +50,8 @@ export type ResolvedThreadCommentAttestation = Attestation & {
 export type ResolvedUpVoteAttestation = Attestation & {
   upVote: boolean;
 };
+
+export type ResolvedProfileAttestation = Attestation & {
+  displayName: string;
+  avatarUrl: string;
+};

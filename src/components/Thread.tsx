@@ -10,6 +10,7 @@ import { ChevronLeftIcon } from "@heroicons/react/20/solid";
 import Loading from "./Loading";
 import NavbarSpacer from "./NavbarSpacer";
 import { ThreadBubble } from "./ThreadBubble";
+import { useAccount } from "wagmi";
 
 type Props = {
   uid: string;
@@ -18,8 +19,15 @@ type Props = {
 export function Thread({ uid }: Props) {
   const { threads } = useData();
   const thisThread = threads.find((t) => t.attestation.id == uid);
+  const { address } = useAccount();
 
-  if (!uid || !thisThread) return <Loading />;
+  if (!uid || !thisThread)
+    return (
+      <div>
+        <NavbarSpacer />
+        <Loading />
+      </div>
+    );
 
   return (
     <div className="w-full h-screen max-w-md mx-auto flex flex-col items-center">
@@ -32,15 +40,20 @@ export function Thread({ uid }: Props) {
           {thisThread.attestation.title}
         </h3>
       </div>
-
-      <ThreadBubble
-        thread={thisThread.attestation.thread}
-        attester={thisThread.attestation.attester}
-        timestamp={thisThread.attestation.time}
-        isOP={true}
-        votes={thisThread.votes}
-        subComments={thisThread.comments}
-      />
+      <div className="w-full max-w-md flex flex-col gap-4 overflow-y-auto px-2 no-scrollbar">
+        <ThreadBubble
+          opUid={thisThread.attestation.id}
+          opAddress={thisThread.attestation.attester}
+          uid={thisThread.attestation.id}
+          thread={thisThread.attestation.thread}
+          attester={thisThread.attestation.attester}
+          timestamp={thisThread.attestation.time}
+          isUser={thisThread.attestation.attester === address}
+          votes={thisThread.votes}
+          liked={thisThread.liked}
+          subComments={thisThread.comments}
+        />
+      </div>
 
       <NavbarSpacer />
     </div>

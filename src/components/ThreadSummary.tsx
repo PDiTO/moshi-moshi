@@ -1,6 +1,7 @@
 import { Thread } from "@/types/helperTypes";
-import { countComments } from "@/utils/uiUtils";
+import { countComments, formatDate } from "@/utils/uiUtils";
 import { ChatBubbleLeftRightIcon, StarIcon } from "@heroicons/react/24/outline";
+import { StarIcon as StarIconSolid } from "@heroicons/react/24/solid";
 import Link from "next/link";
 
 type Props = {
@@ -18,7 +19,11 @@ export function ThreadSummary({ thread }: Props) {
         <div className="flex flex-row justify-between gap-2">
           <div className="flex flex-row justify-between gap-4">
             <div className="flex flex-row justify-center items-center gap-1">
-              <StarIcon className="h-5 w-5 text-indigo-400" />
+              {thread.liked ? (
+                <StarIconSolid className="h-5 w-5 text-indigo-400" />
+              ) : (
+                <StarIcon className="h-5 w-5 text-indigo-400" />
+              )}
               <p className="text-xs font-bold text-indigo-400">
                 {thread.votes}
               </p>
@@ -31,7 +36,7 @@ export function ThreadSummary({ thread }: Props) {
             </div>
           </div>
           <p className="text-xs font-bold text-indigo-400">
-            {new Date(thread.attestation.time * 1000).toLocaleString()}
+            {formatDate(thread.attestation.time)}
           </p>
         </div>
       </div>

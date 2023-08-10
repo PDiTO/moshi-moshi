@@ -12,8 +12,6 @@ export function Chats() {
   const { conversations, loadingConversations } = useData();
   const [showPrimeNewChat, setShowPrimeNewChat] = useState(false);
 
-  if (!conversations || loadingConversations) return <Loading />;
-
   return (
     <div className="flex flex-col h-screen items-center overflow-hidden">
       <NavbarSpacer />
@@ -45,11 +43,15 @@ export function Chats() {
         <PrimeNewChat />
       </div>
 
-      <div className="w-full max-w-sm mx-auto flex flex-col gap-4 overflow-y-auto mt-4">
-        {conversations.map((conversation, index) => (
-          <ChatSummary conversation={conversation} key={index} />
-        ))}
-      </div>
+      {loadingConversations ? (
+        <Loading />
+      ) : (
+        <div className="w-full max-w-sm mx-auto flex flex-col gap-4 overflow-y-auto mt-4">
+          {conversations.map((conversation, index) => (
+            <ChatSummary conversation={conversation} key={index} />
+          ))}
+        </div>
+      )}
       <NavbarSpacer />
     </div>
   );

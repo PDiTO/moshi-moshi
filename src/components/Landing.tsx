@@ -10,7 +10,7 @@ export function Landing() {
         width={128}
         height={128}
       />
-      <h1 className="text-6xl font-medium">
+      <h1 className="text-6xl font-bold">
         MOSHI
         <span className="font-light">MOSHI</span>
       </h1>

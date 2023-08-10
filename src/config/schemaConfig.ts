@@ -5,4 +5,5 @@ export const schemaConfig = {
   threadComment:
     "0x84248e6552459ed99679d517ddda5345cdfc6ce2b772ec6b678660056b9760f9",
   upVote: "0x30b32d5102c39d482689d1b8747d236dde4871a10cd8048e8fea721e956a7979",
+  profile: "0x016300465697c6908e2b6cee414c5b4d3261b172dfba2ffb427efc744fd3831b",
 };

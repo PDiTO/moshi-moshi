@@ -1,3 +1,4 @@
+import { formatDate } from "@/utils/uiUtils";
 import "./MessageBubble.css";
 
 type Props = {
@@ -14,7 +15,7 @@ export function MessageBubble({ message, timestamp, isSender }: Props) {
           isSender ? "items-end" : "items-start"
         }`}
       >
-        <p className={`${isSender ? "from-me" : "from-them"} text-md`}>
+        <p className={`${isSender ? "from-me" : "from-them"} text-sm`}>
           {message}
         </p>
       </div>
@@ -23,7 +24,7 @@ export function MessageBubble({ message, timestamp, isSender }: Props) {
           isSender ? "text-right" : "text-left"
         } text-xs text-gray-400 -mt-1`}
       >
-        {new Date(timestamp * 1000).toLocaleString()}
+        {formatDate(timestamp)}
       </p>
     </div>
   );

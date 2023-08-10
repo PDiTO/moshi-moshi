@@ -1,5 +1,5 @@
 import { getDefaultWallets } from "@rainbow-me/rainbowkit";
-import { configureChains, createConfig, sepolia } from "wagmi";
+import { configureChains, createConfig, mainnet, sepolia } from "wagmi";
 import {
   base,
   baseGoerli,
@@ -22,6 +22,7 @@ export async function getStaticProps() {
 
 const { chains, publicClient, webSocketPublicClient } = configureChains(
   [
+    mainnet,
     base,
     optimism,
     zora,

@@ -10,5 +10,7 @@ export async function getNFTsForAddress(address: string) {
     { method: "GET", headers: headers }
   )
     .then((resp) => resp.json())
-    .then((data) => {});
+    .then((data) => {
+      console.log(data);
+    });
 }

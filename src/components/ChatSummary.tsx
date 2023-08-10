@@ -1,4 +1,5 @@
 import { Conversation } from "@/types/helperTypes";
+import { formatDate } from "@/utils/uiUtils";
 import { ChatBubbleLeftIcon } from "@heroicons/react/24/outline";
 import Link from "next/link";
 
@@ -27,10 +28,10 @@ export function ChatSummary({ conversation }: Props) {
 
           <p className="text-xs font-bold text-indigo-400">
             {conversation.attestations.length > 0 &&
-              new Date(
+              formatDate(
                 conversation.attestations[conversation.attestations.length - 1]
-                  .time * 1000
-              ).toLocaleString()}
+                  .time
+              )}
           </p>
         </div>
       </div>

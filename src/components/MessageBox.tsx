@@ -4,6 +4,8 @@ import { useData } from "@/contexts/DataContext";
 
 import { ArrowSmallUpIcon } from "@heroicons/react/20/solid";
 import { useState } from "react";
+import { normalize } from "viem/ens";
+import { usePublicClient } from "wagmi";
 
 type Props = {
   recipient: string;
