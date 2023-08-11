@@ -66,7 +66,7 @@ export function ThreadBubble({
     if (!thisChat) {
       primeEmptyConversation(attester);
     }
-    router.push(`/chat/${address}`);
+    router.push(`/chat/${attester}`);
   };
 
   const apiPrefix = chainConfig[chain?.id ?? 10].apiPrefix || "";

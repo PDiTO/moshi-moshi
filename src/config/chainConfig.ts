@@ -60,9 +60,15 @@ export const chainConfig: ChainConfigType = {
   },
   // Zora Goerli Testnet
   999: {
-    eas: "0x",
-    schemaRegistry: "0x",
+    eas: "0x086B4803d486a56bbdFAB10b839954A7542F17C0",
+    schemaRegistry: "0x4C6847aF29398a55Af8F2F9e9919751A7bc31fc4",
     covalentChain: "zora-testnet",
+    apiPrefix: "",
+  },
+  919: {
+    eas: "0x2FC89594E0FeDE3faB22089F815e7371e7fF289B",
+    schemaRegistry: "0xc9424a090EC7eE46134eD9CACaDE29C993c01aC2",
+    covalentChain: "",
     apiPrefix: "",
   },
 };

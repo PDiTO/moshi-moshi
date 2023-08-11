@@ -29,7 +29,7 @@ export default function Page() {
       <div className="flex flex-col justify-center items-center bg-gray-900 p-4 rounded-xl w-full max-w-md gap-4">
         <p>Create Schema</p>
         <input
-          placeholder="(uint256 field1, string field2)"
+          placeholder="uint256 field1,string field2,bool field3"
           disabled={busy}
           className="w-full flex-grow text-sm bg-black text-white border border-gray-200 rounded-xl py-2 px-3 leading-tight focus:outline-none focus:border-indigo-400 disabled:opacity-50"
           id="message-text"
