@@ -50,6 +50,17 @@ export function Threads() {
         <button
           disabled={loadingThreads}
           className={`${
+            threadsToLoad === ThreadsToLoad.POPULAR
+              ? "font-bold text-white bg-indigo-400"
+              : "font-medium text-indigo-400"
+          }  border-indigo-400 border-2 flex justify-center items-center m-1 px-3 py-1 rounded-full  text-xs w-32 disabled:opacity-50`}
+          onClick={() => setThreadsToLoad(ThreadsToLoad.POPULAR)}
+        >
+          Popular Threads
+        </button>
+        <button
+          disabled={loadingThreads}
+          className={`${
             threadsToLoad === ThreadsToLoad.MINE
               ? "font-bold text-white bg-indigo-400"
               : "font-medium text-indigo-400"

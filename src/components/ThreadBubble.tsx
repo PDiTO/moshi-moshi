@@ -157,7 +157,7 @@ export function ThreadBubble({
             </div>
           </button>
           <a
-            href={`https://${apiPrefix}.easscan.org/attestation/view/${uid}`}
+            href={`https://${apiPrefix}easscan.org/attestation/view/${uid}`}
             target="_blank"
             className=" hover:opacity-80 disabled:opacity-50"
           >

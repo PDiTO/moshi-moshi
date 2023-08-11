@@ -21,6 +21,7 @@ import {
 import { getNFTsForAddress } from "@/utils/covalentQueries";
 import {
   getENSNames,
+  getPopularThreads,
   getProfilesForAddresses,
   getPublicMessageAttestationsForAddress,
   getRecentThreads,
@@ -348,6 +349,30 @@ export function DataProvider({ children }: DataProviderProps) {
           chainConfig[chain?.id].apiPrefix
         );
         return tmpAttestations;
+      } else if (threadsToLoad === ThreadsToLoad.POPULAR) {
+        const voteAttestations = await getPopularThreads(
+          chainConfig[chain?.id].apiPrefix
+        );
+
+        const refUIDs: string[] = voteAttestations.map((att) => att.refUID);
+
+        const countObject: { [key: string]: number } = refUIDs.reduce<{
+          [key: string]: number;
+        }>((acc, curr) => {
+          acc[curr] = (acc[curr] || 0) + 1;
+          return acc;
+        }, {});
+
+        const sortedEntries = Object.entries(countObject)
+          .sort(([, countA], [, countB]) => countB - countA)
+          .slice(0, 5);
+
+        const top5Counts: { [key: string]: number } =
+          Object.fromEntries(sortedEntries);
+
+        console.log(top5Counts);
+
+        return [];
       } else {
         return [];
       }

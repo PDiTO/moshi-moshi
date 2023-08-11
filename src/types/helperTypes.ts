@@ -31,4 +31,5 @@ export type Profile = {
 export enum ThreadsToLoad {
   MINE,
   RECENT,
+  POPULAR,
 }

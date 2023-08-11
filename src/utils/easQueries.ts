@@ -128,6 +128,45 @@ export async function getRecentThreads(apiPrefix: string) {
   return response.data.data.attestations;
 }
 
+export async function getPopularThreads(apiPrefix: string) {
+  const baseURL = `https://${apiPrefix}easscan.org`;
+
+  const response = await axios.post<MyAttestationResult>(
+    `${baseURL}/graphql`,
+    {
+      query:
+        "query Attestations($where: AttestationWhereInput, $orderBy: [AttestationOrderByWithRelationInput!]) {\n  attestations(where: $where, orderBy: $orderBy) {\n    refUID}\n}",
+
+      variables: {
+        where: {
+          schemaId: {
+            equals: schemaConfig.upVote,
+          },
+          revocationTime: {
+            equals: 0,
+          },
+          refUID: {
+            notIn: [
+              "0x0000000000000000000000000000000000000000000000000000000000000000",
+            ],
+          },
+        },
+        orderBy: [
+          {
+            time: "desc",
+          },
+        ],
+      },
+    },
+    {
+      headers: {
+        "content-type": "application/json",
+      },
+    }
+  );
+  return response.data.data.attestations;
+}
+
 export async function getThreadCommentAttestationsForUids(
   refUids: string[],
   apiPrefix: string
