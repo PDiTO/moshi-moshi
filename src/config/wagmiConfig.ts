@@ -63,7 +63,7 @@ const { chains, publicClient, webSocketPublicClient } = configureChains(
         if (chain.id === zoraTestnet.id)
           return {
             http: process.env.NEXT_PUBLIC_ZORAGOERLI ?? "x",
-            //webSocket: ``,
+            webSocket: process.env.NEXT_PUBLIC_ZORAGOERLIWS ?? "x",
           };
 
         if (chain.id === modeNetwork.id)
