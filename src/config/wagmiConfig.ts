@@ -48,7 +48,7 @@ const { chains, publicClient, webSocketPublicClient } = configureChains(
         if (chain.id === baseGoerli.id)
           return {
             http: process.env.NEXT_PUBLIC_BASEGOERLI ?? "x",
-            //webSocket: ``,
+            webSocket: process.env.NEXT_PUBLIC_BASEGOERLIWS ?? "x",
           };
 
         if (chain.id === zora.id)
