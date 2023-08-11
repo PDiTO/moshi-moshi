@@ -12,6 +12,7 @@ import {
 import { alchemyProvider } from "wagmi/providers/alchemy";
 import { infuraProvider } from "wagmi/providers/infura";
 import { jsonRpcProvider } from "wagmi/providers/jsonRpc";
+import { modeNetwork } from "./customChains";
 
 const walletConnectProjectId = "5a15d63a58a0b96cb0d6fbcc539ec46e";
 
@@ -29,7 +30,9 @@ const { chains, publicClient, webSocketPublicClient } = configureChains(
     sepolia,
     optimismGoerli,
     baseGoerli,
-    zoraTestnet, // remove this line and uncomment below for deploy
+    zoraTestnet,
+    modeNetwork,
+    // remove this line and uncomment below for deploy
     // ...(process.env.NODE_ENV === "development"
     //   ? [sepolia, optimismGoerli, baseGoerli, zoraTestnet]
     //   : []),
@@ -60,6 +63,12 @@ const { chains, publicClient, webSocketPublicClient } = configureChains(
         if (chain.id === zoraTestnet.id)
           return {
             http: process.env.NEXT_PUBLIC_ZORAGOERLI ?? "x",
+            //webSocket: ``,
+          };
+
+        if (chain.id === modeNetwork.id)
+          return {
+            http: process.env.NEXT_PUBLIC_MODENETWORK ?? "x",
             //webSocket: ``,
           };
 
