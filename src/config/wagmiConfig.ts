@@ -26,9 +26,13 @@ const { chains, publicClient, webSocketPublicClient } = configureChains(
     base,
     optimism,
     zora,
-    ...(process.env.NODE_ENV === "development"
-      ? [sepolia, optimismGoerli, baseGoerli, zoraTestnet]
-      : []),
+    sepolia,
+    optimismGoerli,
+    baseGoerli,
+    zoraTestnet, // remove this line and uncomment below for deploy
+    // ...(process.env.NODE_ENV === "development"
+    //   ? [sepolia, optimismGoerli, baseGoerli, zoraTestnet]
+    //   : []),
   ],
   [
     alchemyProvider({ apiKey: process.env.NEXT_PUBLIC_ALCHEMY_KEY ?? "" }),
