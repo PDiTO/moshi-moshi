@@ -15,6 +15,11 @@ import { jsonRpcProvider } from "wagmi/providers/jsonRpc";
 
 const walletConnectProjectId = "5a15d63a58a0b96cb0d6fbcc539ec46e";
 
+export async function getStaticProps() {
+  console.log(process.env.BASE);
+  // ...
+}
+
 const { chains, publicClient, webSocketPublicClient } = configureChains(
   [
     mainnet,
@@ -26,31 +31,31 @@ const { chains, publicClient, webSocketPublicClient } = configureChains(
       : []),
   ],
   [
-    alchemyProvider({ apiKey: process.env.ALCHEMY_KEY ?? "" }),
-    infuraProvider({ apiKey: process.env.INFURA_KEY ?? "" }),
+    alchemyProvider({ apiKey: process.env.NEXT_PUBLIC_ALCHEMY_KEY ?? "" }),
+    infuraProvider({ apiKey: process.env.NEXT_PUBLIC_INFURA_KEY ?? "" }),
     jsonRpcProvider({
       rpc: (chain) => {
         if (chain.id === base.id)
           return {
-            http: process.env.BASE ?? "x",
+            http: process.env.NEXT_PUBLIC_BASE ?? "x",
             webSocket: ``,
           };
 
         if (chain.id === baseGoerli.id)
           return {
-            http: process.env.BASEGOERLI ?? "x",
+            http: process.env.NEXT_PUBLIC_BASEGOERLI ?? "x",
             //webSocket: ``,
           };
 
         if (chain.id === zora.id)
           return {
-            http: process.env.ZORA ?? "x",
+            http: process.env.NEXT_PUBLIC_ZORA ?? "x",
             //webSocket: ``,
           };
 
         if (chain.id === zoraTestnet.id)
           return {
-            http: process.env.ZORAGOERLI ?? "x",
+            http: process.env.NEXT_PUBLIC_ZORAGOERLI ?? "x",
             //webSocket: ``,
           };
 
