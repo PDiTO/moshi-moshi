@@ -122,7 +122,7 @@ export function DataProvider({ children }: DataProviderProps) {
       try {
         const tmpAttestations = await getPublicMessageAttestationsForAddress(
           address,
-          chainConfig[chain?.id].apiPrefix
+          chainConfig[chain?.id].api
         );
 
         const decodedAtts: ResolvedPublicMessageAttestation[] = [];
@@ -339,19 +339,19 @@ export function DataProvider({ children }: DataProviderProps) {
     try {
       if (threadsToLoad === ThreadsToLoad.RECENT) {
         const tmpAttestations = await getRecentThreads(
-          chainConfig[chain?.id].apiPrefix
+          chainConfig[chain?.id].api
         );
 
         return tmpAttestations;
       } else if (threadsToLoad === ThreadsToLoad.MINE) {
         const tmpAttestations = await getThreadAttestationsForAddress(
           address,
-          chainConfig[chain?.id].apiPrefix
+          chainConfig[chain?.id].api
         );
         return tmpAttestations;
       } else if (threadsToLoad === ThreadsToLoad.POPULAR) {
         const voteAttestations = await getPopularThreads(
-          chainConfig[chain?.id].apiPrefix
+          chainConfig[chain?.id].api
         );
 
         const refUIDs: string[] = voteAttestations.map((att) => att.refUID);
@@ -389,7 +389,7 @@ export function DataProvider({ children }: DataProviderProps) {
       try {
         // const tmpAttestations = await getThreadAttestationsForAddress(
         //   address,
-        //   chainConfig[chain?.id].apiPrefix
+        //   chainConfig[chain?.id].api
         // );
 
         const tmpAttestations = (await getDesiredThreads()) ?? [];
@@ -398,13 +398,13 @@ export function DataProvider({ children }: DataProviderProps) {
 
         const tmpComments = await getThreadCommentAttestationsForUids(
           uids,
-          chainConfig[chain?.id].apiPrefix
+          chainConfig[chain?.id].api
         );
 
         const commentUids = tmpComments.map((att) => att.id);
         const tmpVotes = await getUpVoteAttestationsForUids(
           [...uids, ...commentUids],
-          chainConfig[chain?.id].apiPrefix
+          chainConfig[chain?.id].api
         );
 
         const comments: ResolvedThreadCommentAttestation[] = tmpComments.map(
@@ -753,23 +753,23 @@ export function DataProvider({ children }: DataProviderProps) {
   };
 
   // NFTs
-  const [covalentLoading, setCovalentLoading] = useState(false);
+  //   const [covalentLoading, setCovalentLoading] = useState(false);
 
-  useEffect(() => {
-    async function getNFTs() {
-      if (!address || !chain || covalentLoading) return;
-      setCovalentLoading(true);
-      try {
-        const NFTs = await getNFTsForAddress(address);
-        console.log("Grabbed NFTs", NFTs);
-      } catch (error) {
-        console.log(error);
-      } finally {
-        setCovalentLoading(false);
-      }
-    }
-    getNFTs();
-  }, [address, chain]);
+  //   useEffect(() => {
+  //     async function getNFTs() {
+  //       if (!address || !chain || covalentLoading) return;
+  //       setCovalentLoading(true);
+  //       try {
+  //         const NFTs = await getNFTsForAddress(address);
+  //         console.log("Grabbed NFTs", NFTs);
+  //       } catch (error) {
+  //         console.log(error);
+  //       } finally {
+  //         setCovalentLoading(false);
+  //       }
+  //     }
+  //     getNFTs();
+  //   }, [address, chain]);
 
   // PROFILE
   const [loadingProfiles, setLoadingProfiles] = useState(false);
@@ -788,7 +788,7 @@ export function DataProvider({ children }: DataProviderProps) {
     try {
       const newProfiles = await getProfilesForAddresses(
         [...addresses, address],
-        chainConfig[chain?.id].apiPrefix
+        chainConfig[chain?.id].api
       );
 
       const decodedAtts: ResolvedProfileAttestation[] = [];

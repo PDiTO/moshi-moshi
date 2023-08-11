@@ -6,12 +6,10 @@ import axios from "axios";
 
 export async function getPublicMessageAttestationsForAddress(
   address: string,
-  apiPrefix: string
+  api: string
 ) {
-  const baseURL = `https://${apiPrefix}easscan.org`;
-
   const response = await axios.post<MyAttestationResult>(
-    `${baseURL}/graphql`,
+    api,
     {
       query:
         "query Attestations($where: AttestationWhereInput, $orderBy: [AttestationOrderByWithRelationInput!]) {\n  attestations(where: $where, orderBy: $orderBy) {\n    attester\n    revocationTime\n    expirationTime\n    time\n    recipient\n    id\n    data\n  }\n}",
@@ -52,12 +50,10 @@ export async function getPublicMessageAttestationsForAddress(
 
 export async function getThreadAttestationsForAddress(
   address: string,
-  apiPrefix: string
+  api: string
 ) {
-  const baseURL = `https://${apiPrefix}easscan.org`;
-
   const response = await axios.post<MyAttestationResult>(
-    `${baseURL}/graphql`,
+    api,
     {
       query:
         "query Attestations($where: AttestationWhereInput, $orderBy: [AttestationOrderByWithRelationInput!]) {\n  attestations(where: $where, orderBy: $orderBy) {\n    attester\n    revocationTime\n    expirationTime\n    time\n    recipient\n    id\n    data\n  }\n}",
@@ -94,12 +90,9 @@ export async function getThreadAttestationsForAddress(
   return response.data.data.attestations;
 }
 
-export async function getRecentThreads(apiPrefix: string) {
-  const baseURL = `https://${apiPrefix}easscan.org`;
-
+export async function getRecentThreads(api: string) {
   const response = await axios.post<MyAttestationResult>(
-    // `${baseURL}/graphql`,
-    "http://localhost:4000/graphql",
+    api,
     {
       query:
         "query Attestations($where: AttestationWhereInput, $orderBy: [AttestationOrderByWithRelationInput!]) {\n  attestations(where: $where, orderBy: $orderBy) {\n    attester\n    revocationTime\n    expirationTime\n    time\n    recipient\n    id\n    data\n  }\n}",
@@ -129,11 +122,9 @@ export async function getRecentThreads(apiPrefix: string) {
   return response.data.data.attestations;
 }
 
-export async function getPopularThreads(apiPrefix: string) {
-  const baseURL = `https://${apiPrefix}easscan.org`;
-
+export async function getPopularThreads(api: string) {
   const response = await axios.post<MyAttestationResult>(
-    `${baseURL}/graphql`,
+    api,
     {
       query:
         "query Attestations($where: AttestationWhereInput, $orderBy: [AttestationOrderByWithRelationInput!]) {\n  attestations(where: $where, orderBy: $orderBy) {\n    refUID}\n}",
@@ -170,12 +161,10 @@ export async function getPopularThreads(apiPrefix: string) {
 
 export async function getThreadCommentAttestationsForUids(
   refUids: string[],
-  apiPrefix: string
+  api: string
 ) {
-  const baseURL = `https://${apiPrefix}easscan.org`;
-
   const response = await axios.post<MyAttestationResult>(
-    `${baseURL}/graphql`,
+    api,
     {
       query:
         "query Attestations($where: AttestationWhereInput, $orderBy: [AttestationOrderByWithRelationInput!]) {\n  attestations(where: $where, orderBy: $orderBy) {\n    attester\n    revocationTime\n    expirationTime\n    time\n    recipient\n    id\n    data\n  refUID\n  }\n}",
@@ -210,12 +199,10 @@ export async function getThreadCommentAttestationsForUids(
 
 export async function getUpVoteAttestationsForUids(
   refUids: string[],
-  apiPrefix: string
+  api: string
 ) {
-  const baseURL = `https://${apiPrefix}easscan.org`;
-
   const response = await axios.post<MyAttestationResult>(
-    `${baseURL}/graphql`,
+    api,
     {
       query:
         "query Attestations($where: AttestationWhereInput, $orderBy: [AttestationOrderByWithRelationInput!]) {\n  attestations(where: $where, orderBy: $orderBy) {\n    attester\n    revocationTime\n    expirationTime\n    time\n    recipient\n    id\n    data\n  refUID\n  }\n}",
@@ -250,12 +237,10 @@ export async function getUpVoteAttestationsForUids(
 
 export async function getProfilesForAddresses(
   addresses: string[],
-  apiPrefix: string
+  api: string
 ) {
-  const baseURL = `https://${apiPrefix}easscan.org`;
-
   const response = await axios.post<MyAttestationResult>(
-    `${baseURL}/graphql`,
+    api,
     {
       query:
         "query Attestations($where: AttestationWhereInput, $orderBy: [AttestationOrderByWithRelationInput!]) {\n  attestations(where: $where, orderBy: $orderBy) {\n    attester\n    revocationTime\n    expirationTime\n    time\n    recipient\n    id\n    data\n  refUID\n  }\n}",

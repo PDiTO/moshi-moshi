@@ -69,7 +69,7 @@ export function ThreadBubble({
     router.push(`/chat/${attester}`);
   };
 
-  const apiPrefix = chainConfig[chain?.id ?? 10].apiPrefix || "";
+  const easScan = chainConfig[chain?.id ?? 10].easScan || undefined;
 
   return (
     <div className=" w-full">
@@ -156,16 +156,18 @@ export function ThreadBubble({
               <p className="text-[10px]">{votes}</p>
             </div>
           </button>
-          <a
-            href={`https://${apiPrefix}easscan.org/attestation/view/${uid}`}
-            target="_blank"
-            className=" hover:opacity-80 disabled:opacity-50"
-          >
-            <div className="flex flex-row justify-center items-center gap-1">
-              <LinkIcon className="h-5 w-5" />
-              <p className="text-[10px]">SHARE</p>
-            </div>
-          </a>
+          {easScan && (
+            <a
+              href={`https://${easScan}/attestation/view/${uid}`}
+              target="_blank"
+              className=" hover:opacity-80 disabled:opacity-50"
+            >
+              <div className="flex flex-row justify-center items-center gap-1">
+                <LinkIcon className="h-5 w-5" />
+                <p className="text-[10px]">SHARE</p>
+              </div>
+            </a>
+          )}
         </div>
       </div>
 

@@ -52,7 +52,7 @@ export default function ModeToggle() {
           </div>
         </Link>
         <hr className="my-4 opacity-50" />
-        <Link href="/proposal">
+        {/* <Link href="/proposal">
           <div className="flex flex-col items-center hover:opacity-80 transition-all">
             {pathname.startsWith("/proposal") ? (
               <GlobeAmericasIconSolid className="w-8 h-8 text-indigo-400" />
@@ -66,7 +66,7 @@ export default function ModeToggle() {
             )}
           </div>
         </Link>
-        <hr className="my-4 opacity-50" />
+        <hr className="my-4 opacity-50" /> */}
         <Link href="/profile">
           <div className="flex flex-col items-center hover:opacity-80 transition-all">
             {pathname.startsWith("/profile") ? (
