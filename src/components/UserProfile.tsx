@@ -25,8 +25,6 @@ export function UserProfile({ user }: Props) {
   const { conversations, profiles, primeEmptyConversation } = useData();
   const router = useRouter();
 
-  if (!user) return <Loading />;
-
   const profile = profiles[user];
 
   const handleClick = async () => {
@@ -69,6 +67,8 @@ export function UserProfile({ user }: Props) {
     }
     getTokens();
   }, [user]);
+
+  if (!user) return <Loading />;
 
   return (
     <div className="w-full h-screen max-w-md mx-auto flex flex-col items-center ">
