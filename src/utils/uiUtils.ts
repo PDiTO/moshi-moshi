@@ -1,4 +1,5 @@
 import { Thread, ThreadComment } from "@/types/helperTypes";
+import { createHash } from "crypto";
 
 export function countComments(thread: Thread): number {
   // This function counts the direct comments and recursively counts sub-comments.
@@ -70,3 +71,17 @@ export function formatDate(timestamp: number): string {
     year: "numeric",
   });
 }
+
+const avatarUrls = [
+  "https://api.dicebear.com/6.x/adventurer/svg?seed=Oreo",
+  "https://api.dicebear.com/6.x/adventurer/svg?seed=Charlie",
+  "https://api.dicebear.com/6.x/adventurer/svg?seed=Luna",
+];
+
+export const getRandomAvatarForAddress = (address: string) => {
+  const hash = createHash("sha256").update(address).digest("hex");
+
+  const index = parseInt(hash, 16) % avatarUrls.length;
+
+  return avatarUrls[index];
+};

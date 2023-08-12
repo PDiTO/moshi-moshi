@@ -1,9 +1,11 @@
-import { Chain } from "wagmi";
+import { Chain } from "@rainbow-me/rainbowkit";
 
 export const modeNetwork = {
   id: 919,
   name: "Mode",
   network: "mode",
+  iconUrl: "/modeLogo.svg",
+  iconBackground: "#000",
   nativeCurrency: {
     decimals: 18,
     name: "Ether",

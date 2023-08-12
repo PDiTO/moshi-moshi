@@ -259,7 +259,7 @@ export async function getProfilesForAddresses(
         },
         orderBy: [
           {
-            time: "desc",
+            time: "asc",
           },
         ],
       },

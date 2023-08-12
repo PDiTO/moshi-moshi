@@ -43,7 +43,7 @@ export function ThreadBubble({
 }: Props) {
   const [busy, setBusy] = useState(false);
   const [showPrimeNewComment, setShowPrimeNewComment] = useState(false);
-  const { upVoteAttestation, conversations, primeEmptyConversation } =
+  const { upVoteAttestation, conversations, primeEmptyConversation, profiles } =
     useData();
 
   const { chain } = useNetwork();
@@ -62,11 +62,7 @@ export function ThreadBubble({
   };
 
   const handleClick = async () => {
-    const thisChat = conversations.find((convo) => convo.address == attester);
-    if (!thisChat) {
-      primeEmptyConversation(attester);
-    }
-    router.push(`/chat/${attester}`);
+    router.push(`/profile/${attester}`);
   };
 
   const easScan = chainConfig[chain?.id ?? 10].easScan || undefined;
@@ -79,13 +75,20 @@ export function ThreadBubble({
       >
         <div className="flex flex-row mb-1 justify-between items-center w-full">
           <div className="flex flex-row items-center gap-1">
+            {profiles[attester]?.avatarUrl && (
+              <img
+                src={profiles[attester].avatarUrl}
+                className="w-6 h-6 rounded-full object-cover"
+              />
+            )}
             <button
               onClick={handleClick}
               className={`${
                 isUser ? "text-black" : "text-gray-400"
               } text-xs font-medium`}
             >
-              {attester}
+              {profiles[attester]?.displayName ||
+                `${attester.slice(0, 6)}...${attester.slice(-4)}`}
             </button>
             {opAddress === attester && (
               <p className="text-xs rounded-xl bg-indigo-700 px-2">OP</p>

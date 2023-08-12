@@ -2,7 +2,8 @@
 
 import NavbarSpacer from "@/components/NavbarSpacer";
 import { useData } from "@/contexts/DataContext";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useAccount } from "wagmi";
 
 export default function Page() {
   const [busy, setBusy] = useState(false);
@@ -23,11 +24,23 @@ export default function Page() {
     }
   };
 
+  const { profiles } = useData();
+  const { address } = useAccount();
+
+  useEffect(() => {
+    if (!address) return;
+    const profile = profiles[address];
+    if (profile) {
+      setDisplayName(profile.displayName);
+      setAvatarUrl(profile.avatarUrl);
+    }
+  }, [address, profiles]);
+
   return (
     <div className="flex flex-col h-screen items-center w-full">
       <NavbarSpacer />
       <div className="flex flex-col justify-center items-center w-full max-w-md gap-4">
-        <div className="text-center text-4xl font-medium">Profile</div>
+        <div className="text-center text-4xl font-medium">Your Profile</div>
         <div className="flex flex-col w-full gap-1">
           <p className="text-xs font-bold uppercase">Display Name</p>
           <input

@@ -69,6 +69,9 @@ type DataContextType = {
     comment: string
   ) => Promise<void>;
   upVoteAttestation: (refUID: string) => Promise<void>;
+  profiles: {
+    [address: string]: ResolvedProfileAttestation;
+  };
   createProfile: (displayName: string, avatarUrl: string) => Promise<void>;
   createSchema: (
     schemaName: string,
@@ -135,6 +138,9 @@ export function DataProvider({ children }: DataProviderProps) {
             isSender: att.attester === address,
           });
         });
+
+        const addresses = tmpAttestations.map((att) => att.attester);
+        await getProfiles([...new Set(addresses)]);
 
         const conversations = groupAttestationsByConversation(
           decodedAtts,
@@ -350,29 +356,32 @@ export function DataProvider({ children }: DataProviderProps) {
         );
         return tmpAttestations;
       } else if (threadsToLoad === ThreadsToLoad.POPULAR) {
-        const voteAttestations = await getPopularThreads(
+        // const voteAttestations = await getPopularThreads(
+        //   chainConfig[chain?.id].api
+        // );
+
+        // const refUIDs: string[] = voteAttestations.map((att) => att.refUID);
+
+        // const countObject: { [key: string]: number } = refUIDs.reduce<{
+        //   [key: string]: number;
+        // }>((acc, curr) => {
+        //   acc[curr] = (acc[curr] || 0) + 1;
+        //   return acc;
+        // }, {});
+
+        // const sortedEntries = Object.entries(countObject)
+        //   .sort(([, countA], [, countB]) => countB - countA)
+        //   .slice(0, 5);
+
+        // const top5Counts: { [key: string]: number } =
+        //   Object.fromEntries(sortedEntries);
+
+        // console.log(top5Counts);
+        const tmpAttestations = await getRecentThreads(
           chainConfig[chain?.id].api
         );
 
-        const refUIDs: string[] = voteAttestations.map((att) => att.refUID);
-
-        const countObject: { [key: string]: number } = refUIDs.reduce<{
-          [key: string]: number;
-        }>((acc, curr) => {
-          acc[curr] = (acc[curr] || 0) + 1;
-          return acc;
-        }, {});
-
-        const sortedEntries = Object.entries(countObject)
-          .sort(([, countA], [, countB]) => countB - countA)
-          .slice(0, 5);
-
-        const top5Counts: { [key: string]: number } =
-          Object.fromEntries(sortedEntries);
-
-        console.log(top5Counts);
-
-        return [];
+        return tmpAttestations;
       } else {
         return [];
       }
@@ -422,7 +431,7 @@ export function DataProvider({ children }: DataProviderProps) {
         const commentAddresses = comments.map((att) => att.attester);
         const allAddresses = [...threadAddresses, ...commentAddresses];
 
-        const profiles = await getProfiles(allAddresses);
+        await getProfiles([...new Set(allAddresses)]);
 
         const organizedComments = organizeByDetailedRefUID(comments);
 
@@ -752,25 +761,6 @@ export function DataProvider({ children }: DataProviderProps) {
     return sortThreadsByVotes(threads);
   };
 
-  // NFTs
-  //   const [covalentLoading, setCovalentLoading] = useState(false);
-
-  //   useEffect(() => {
-  //     async function getNFTs() {
-  //       if (!address || !chain || covalentLoading) return;
-  //       setCovalentLoading(true);
-  //       try {
-  //         const NFTs = await getNFTsForAddress(address);
-  //         console.log("Grabbed NFTs", NFTs);
-  //       } catch (error) {
-  //         console.log(error);
-  //       } finally {
-  //         setCovalentLoading(false);
-  //       }
-  //     }
-  //     getNFTs();
-  //   }, [address, chain]);
-
   // PROFILE
   const [loadingProfiles, setLoadingProfiles] = useState(false);
   const [profiles, setProfiles] = useState<{
@@ -802,12 +792,13 @@ export function DataProvider({ children }: DataProviderProps) {
         });
       });
 
-      const updatedProfiles = { ...profiles };
-      decodedAtts.forEach((profile) => {
-        updatedProfiles[profile.attester] = profile;
+      setProfiles((prevProfiles) => {
+        const updatedProfiles = { ...prevProfiles };
+        decodedAtts.forEach((profile) => {
+          updatedProfiles[profile.attester] = profile;
+        });
+        return updatedProfiles;
       });
-      setProfiles(updatedProfiles);
-      console.log("ABC", updatedProfiles);
     } catch (error) {
       console.log(error);
     } finally {
@@ -842,7 +833,36 @@ export function DataProvider({ children }: DataProviderProps) {
       await tx.wait();
 
       // Update local profile
-      // TODO
+      address &&
+        setProfiles((prevProfiles) => {
+          const updatedProfiles = { ...prevProfiles };
+
+          if (updatedProfiles[address]) {
+            // Check if profile exists
+            updatedProfiles[address].displayName = displayName;
+            updatedProfiles[address].avatarUrl = avatarUrl;
+          } else {
+            // If the profile does not exist, create one.
+            // However, this scenario might not be likely given that they're updating their profile.
+            updatedProfiles[address] = {
+              // Assuming a structure like this based on the previous code.
+              // You'd adjust based on the actual structure of a profile
+              id: "someId", // Provide actual value
+              attester: "someAttester", // Provide actual value
+              recipient: address,
+              refUID: "someRefUID", // Provide actual value
+              revocationTime: 0, // Provide actual value
+              expirationTime: 0, // Provide actual value
+              data: "0x", // Provide actual value
+              displayName: displayName,
+              avatarUrl: avatarUrl,
+              txid: "0x",
+              time: 0,
+            };
+          }
+
+          return updatedProfiles;
+        });
     } catch (error) {
       console.log(error);
       throw error;
@@ -887,6 +907,7 @@ export function DataProvider({ children }: DataProviderProps) {
         handleCreateThread,
         handleCreateComment,
         upVoteAttestation,
+        profiles,
         createProfile,
         createSchema,
       }}

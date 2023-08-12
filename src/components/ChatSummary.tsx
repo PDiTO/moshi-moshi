@@ -1,3 +1,4 @@
+import { useData } from "@/contexts/DataContext";
 import { Conversation } from "@/types/helperTypes";
 import { formatDate } from "@/utils/uiUtils";
 import { ChatBubbleLeftIcon } from "@heroicons/react/24/outline";
@@ -8,12 +9,26 @@ type Props = {
 };
 
 export function ChatSummary({ conversation }: Props) {
+  const { profiles } = useData();
+
   return (
     <Link href={`/chat/${conversation.address}`}>
       <div className="flex flex-col gap-1 bg-gray-900 p-4 rounded-xl ">
-        <h3 className="text-xs font-bold overflow-hidden text-ellipsis whitespace-nowrap">
-          {conversation.address}
-        </h3>
+        <div className="flex flex-row justify-start gap-2 items-center">
+          {profiles[conversation.address]?.avatarUrl && (
+            <img
+              src={profiles[conversation.address].avatarUrl}
+              className="w-5 h-5 rounded-full object-cover"
+            />
+          )}
+          <h3 className="text-xs font-bold overflow-hidden text-ellipsis whitespace-nowrap">
+            {profiles[conversation.address]?.displayName ||
+              `${conversation.address.slice(
+                0,
+                6
+              )}...${conversation.address.slice(-4)}`}
+          </h3>
+        </div>
         <p className="">
           {conversation.attestations.length > 0
             ? conversation.attestations[conversation.attestations.length - 1]
