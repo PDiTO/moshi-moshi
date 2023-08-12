@@ -56,8 +56,6 @@ export function UserProfile({ user }: Props) {
             }
             return 0; // no sorting (a equals b)
           });
-
-        console.log(filteredAndSortedItems);
         setTokenData({ ...data, items: filteredAndSortedItems });
       } catch (error) {
         console.log(error);
@@ -112,10 +110,10 @@ export function UserProfile({ user }: Props) {
 
           {loadingCovalent && <Loading />}
 
-          {tokenData && (
+          {tokenData && tokenData.items.length > 0 && (
             <div className="flex flex-col justify-center items-center mt-10">
               <h3 className="font-bold mb-2">
-                Some of {profile.displayName}'s holdings
+                Some of {profile.displayName}&apos;s holdings
               </h3>
               <div className="grid grid-cols-4 gap-x-16 gap-y-4">
                 {tokenData.items.map((token, index) => (
