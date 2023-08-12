@@ -82,7 +82,7 @@ export function Threads() {
       </div>
 
       <div
-        className={`w-full max-w-sm mx-auto flex flex-col gap-4 overflow-y-auto mt-4 transition-all ${
+        className={`w-full max-w-sm mx-auto flex flex-col gap-4 overflow-y-auto mt-4 transition-all no-scrollbar ${
           showPrimeNewThread ? "opacity-0 pointer-events-none" : ""
         }`}
       >
