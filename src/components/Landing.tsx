@@ -17,7 +17,7 @@ export function Landing() {
           alt={"modeLogo"}
           width={32}
           height={32}
-          className="mr-1"
+          className="mr-1g"
         />
         <Image
           src={"/opLogo.svg"}

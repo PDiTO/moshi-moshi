@@ -76,6 +76,9 @@ const avatarUrls = [
   "https://api.dicebear.com/6.x/adventurer/svg?seed=Oreo",
   "https://api.dicebear.com/6.x/adventurer/svg?seed=Charlie",
   "https://api.dicebear.com/6.x/adventurer/svg?seed=Luna",
+  "https://api.dicebear.com/6.x/adventurer/svg?seed=Sophie",
+  "https://api.dicebear.com/6.x/adventurer/svg?seed=Abby",
+  "https://api.dicebear.com/6.x/adventurer/svg?seed=Shadow",
 ];
 
 export const getRandomAvatarForAddress = (address: string) => {
