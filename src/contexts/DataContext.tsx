@@ -233,6 +233,8 @@ export function DataProvider({ children }: DataProviderProps) {
       // Regroup the attestations using the unchanged function
       return groupAttestationsByConversation(flatAttestations, address);
     });
+
+    getProfiles([attestation.attester]);
   };
 
   const handleSendMessage = async (message: string, recipient: string) => {
