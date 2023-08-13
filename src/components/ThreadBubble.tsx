@@ -43,8 +43,7 @@ export function ThreadBubble({
 }: Props) {
   const [busy, setBusy] = useState(false);
   const [showPrimeNewComment, setShowPrimeNewComment] = useState(false);
-  const { upVoteAttestation, conversations, primeEmptyConversation, profiles } =
-    useData();
+  const { upVoteAttestation, profiles } = useData();
 
   const { chain } = useNetwork();
   const { address } = useAccount();

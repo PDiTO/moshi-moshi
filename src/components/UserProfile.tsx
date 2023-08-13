@@ -30,7 +30,7 @@ export function UserProfile({ user }: Props) {
   const handleClick = async () => {
     const thisChat = conversations.find((convo) => convo.address == user);
     if (!thisChat) {
-      primeEmptyConversation(user);
+      await primeEmptyConversation(user);
     }
     router.push(`/chat/${user}`);
   };

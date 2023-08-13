@@ -41,7 +41,7 @@ export default function PrimeNewChat() {
         (convo) => convo.address == convertedAddress
       );
       if (!thisChat) {
-        primeEmptyConversation(convertedAddress);
+        await primeEmptyConversation(convertedAddress);
       }
       router.push(`/chat/${convertedAddress}`);
     } catch (error) {

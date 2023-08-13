@@ -267,11 +267,12 @@ export function DataProvider({ children }: DataProviderProps) {
     }
   };
 
-  const primeEmptyConversation = (address: string) => {
+  const primeEmptyConversation = async (address: string) => {
     const emptyConversation: Conversation = {
       address: address,
       attestations: [],
     };
+    await getProfiles([address]);
 
     setConversations([emptyConversation, ...conversations]);
   };
