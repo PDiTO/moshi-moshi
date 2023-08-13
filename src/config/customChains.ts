@@ -2,7 +2,7 @@ import { Chain } from "@rainbow-me/rainbowkit";
 
 export const modeNetwork = {
   id: 919,
-  name: "Mode",
+  name: "Mode Testnet",
   network: "mode",
   iconUrl: "/modeLogo.svg",
   iconBackground: "#000",
