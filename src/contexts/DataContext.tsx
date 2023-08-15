@@ -1,7 +1,7 @@
 "use client";
 
 import { EASContract } from "@/abis/EAS";
-import { chainConfig } from "@/config/chainConfig";
+import { chainConfig, defaultChainConfig } from "@/config/chainConfig";
 import { schemaConfig } from "@/config/schemaConfig";
 import { useEthersProvider } from "@/hooks/useEthersProvider";
 import { useEthersSigner } from "@/hooks/useEthersSinger";
@@ -106,6 +106,7 @@ export function DataProvider({ children }: DataProviderProps) {
   const signer = useEthersSigner();
 
   // General
+  const config = chainConfig[chain?.id ?? 0] ?? defaultChainConfig;
 
   // Reset path when disconnecting
   useEffect(() => {
@@ -201,7 +202,7 @@ export function DataProvider({ children }: DataProviderProps) {
   };
 
   const onAttestation = async (uid: string) => {
-    const easProvider = new EAS(chainConfig[chain?.id ?? 10].eas);
+    const easProvider = new EAS(config.eas);
     easProvider.connect(provider);
 
     const attestation = await easProvider.getAttestation(uid);
@@ -240,7 +241,7 @@ export function DataProvider({ children }: DataProviderProps) {
   const handleSendMessage = async (message: string, recipient: string) => {
     try {
       if (!signer) return;
-      const eas = new EAS(chainConfig[chain?.id ?? 10].eas);
+      const eas = new EAS(config.eas);
       eas.connect(signer);
 
       // Initialize SchemaEncoder with the schema string
@@ -280,7 +281,7 @@ export function DataProvider({ children }: DataProviderProps) {
   };
 
   useContractEvent({
-    address: chainConfig[chain?.id ?? 10].eas,
+    address: config.eas,
     abi: EASContract.abi,
     eventName: "Attested",
     listener(logs: any) {
@@ -509,7 +510,7 @@ export function DataProvider({ children }: DataProviderProps) {
   const handleCreateThread = async (title: string, thread: string) => {
     try {
       if (!signer) return;
-      const eas = new EAS(chainConfig[chain?.id ?? 10].eas);
+      const eas = new EAS(config.eas);
       eas.connect(signer);
 
       // Initialize SchemaEncoder with the schema string
@@ -532,7 +533,7 @@ export function DataProvider({ children }: DataProviderProps) {
 
       const newAttestationUID = await tx.wait();
 
-      const easProvider = new EAS(chainConfig[chain?.id ?? 10].eas);
+      const easProvider = new EAS(config.eas);
       easProvider.connect(provider);
 
       const attestation = await easProvider.getAttestation(newAttestationUID);
@@ -617,7 +618,7 @@ export function DataProvider({ children }: DataProviderProps) {
   ) => {
     try {
       if (!signer) return;
-      const eas = new EAS(chainConfig[chain?.id ?? 10].eas);
+      const eas = new EAS(config.eas);
       eas.connect(signer);
 
       // Initialize SchemaEncoder with the schema string
@@ -641,7 +642,7 @@ export function DataProvider({ children }: DataProviderProps) {
 
       const newAttestationUID = await tx.wait();
 
-      const easProvider = new EAS(chainConfig[chain?.id ?? 10].eas);
+      const easProvider = new EAS(config.eas);
       easProvider.connect(provider);
 
       const attestation = await easProvider.getAttestation(newAttestationUID);
@@ -712,7 +713,7 @@ export function DataProvider({ children }: DataProviderProps) {
   const upVoteAttestation = async (refUID: string) => {
     try {
       if (!signer) return;
-      const eas = new EAS(chainConfig[chain?.id ?? 10].eas);
+      const eas = new EAS(config.eas);
       eas.connect(signer);
 
       // Initialize SchemaEncoder with the schema string
@@ -812,7 +813,7 @@ export function DataProvider({ children }: DataProviderProps) {
   const createProfile = async (displayName: string, avatarUrl: string) => {
     try {
       if (!signer) return;
-      const eas = new EAS(chainConfig[chain?.id ?? 10].eas);
+      const eas = new EAS(config.eas);
       eas.connect(signer);
 
       // Initialize SchemaEncoder with the schema string
@@ -879,8 +880,7 @@ export function DataProvider({ children }: DataProviderProps) {
     revocable: boolean = true
   ) => {
     if (!signer) return;
-    const schemaRegistryContractAddress =
-      chainConfig[chain?.id ?? 10].schemaRegistry;
+    const schemaRegistryContractAddress = config.schemaRegistry;
     const schemaRegistry = new SchemaRegistry(schemaRegistryContractAddress);
 
     schemaRegistry.connect(signer);

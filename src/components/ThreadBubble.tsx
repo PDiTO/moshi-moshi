@@ -14,7 +14,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useAccount, useNetwork } from "wagmi";
 import PrimeNewComment from "./PrimeNewComment";
-import { chainConfig } from "@/config/chainConfig";
+import { chainConfig, defaultChainConfig } from "@/config/chainConfig";
 
 type Props = {
   opUid: string;
@@ -48,6 +48,7 @@ export function ThreadBubble({
   const { chain } = useNetwork();
   const { address } = useAccount();
   const router = useRouter();
+  const config = chainConfig[chain?.id ?? 0] ?? defaultChainConfig;
 
   const handleUpvote = async () => {
     setBusy(true);
@@ -64,7 +65,7 @@ export function ThreadBubble({
     router.push(`/profile/${attester}`);
   };
 
-  const easScan = chainConfig[chain?.id ?? 10].easScan || undefined;
+  const easScan = config.easScan || undefined;
 
   return (
     <div className=" w-full">

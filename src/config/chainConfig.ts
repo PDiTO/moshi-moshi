@@ -78,4 +78,10 @@ export const chainConfig: ChainConfigType = {
     api: "http://localhost:4000",
   },
 };
-``;
+
+export const defaultChainConfig = {
+  eas: "0x",
+  schemaRegistry: "0x",
+  covalentChain: "",
+  api: "",
+};
