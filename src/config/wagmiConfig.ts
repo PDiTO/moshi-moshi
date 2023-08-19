@@ -1,9 +1,8 @@
 import { getDefaultWallets } from "@rainbow-me/rainbowkit";
 import { configureChains, createConfig, mainnet, sepolia } from "wagmi";
 import {
-  base,
   baseGoerli,
-  foundry,
+  base,
   optimism,
   optimismGoerli,
   zora,
@@ -16,26 +15,13 @@ import { modeNetwork } from "./customChains";
 
 const walletConnectProjectId = "5a15d63a58a0b96cb0d6fbcc539ec46e";
 
-export async function getStaticProps() {
-  console.log(process.env.BASE);
-  // ...
-}
-
 const { chains, publicClient, webSocketPublicClient } = configureChains(
   [
     mainnet,
-    base,
     optimism,
-    zora,
-    sepolia,
-    optimismGoerli,
-    baseGoerli,
-    zoraTestnet,
-    modeNetwork,
-    // remove this line and uncomment below for deploy
-    // ...(process.env.NODE_ENV === "development"
-    //   ? [sepolia, optimismGoerli, baseGoerli, zoraTestnet]
-    //   : []),
+    ...(process.env.NODE_ENV === "development"
+      ? [optimismGoerli, baseGoerli, sepolia]
+      : []),
   ],
   [
     alchemyProvider({ apiKey: process.env.NEXT_PUBLIC_ALCHEMY_KEY ?? "" }),

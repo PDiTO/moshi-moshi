@@ -13,7 +13,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
   return (
     <WagmiConfig config={config}>
       <RainbowKitProvider
-        chains={chains}
+        chains={chains.slice(1)}
         theme={darkTheme({
           borderRadius: "medium",
           fontStack: "system",
